@@ -55,7 +55,7 @@ The AI (Google Gemini Flash-Lite on its free tier, through an OpenAI-compatible 
 It is deliberately **boxed in**:
 - **Fixed vocabulary.** It can only choose item ids from the 20-item wardrobe, slot by slot, through a strict JSON schema (Structured Outputs). It can't invent a garment the chimp can't wear.
 - **Validation and repair on the server.** Every answer is checked: right item in the right slot, top/bottom/shoes always present, no impossible combinations (puffer + shorts), change times inside the day and in order, only removing what's worn, max four changes, text length caps. Small problems are repaired; anything too broken is thrown away.
-- **A deterministic fallback.** A rule engine (thresholds on feels-like temperature, rain, wind and UV, with a debounce so the outfit doesn't flicker) produces the same kind of plan. It runs whenever there's no key, the model is slow (12 s timeout), errors, or returns nonsense. It also runs in the visitor's browser if our server can't be reached.
+- **A deterministic fallback.** A rule engine (thresholds on feels-like temperature, rain, wind and UV, with a debounce so the outfit doesn't flicker) produces the same kind of plan. It runs whenever there's no key, the model is slow (8 s timeout), errors, or returns nonsense. It also runs in the visitor's browser if our server can't be reached.
 - **The server decides the source**, not the model. The card's "backup brain" note is set by the server.
 - **Prompt-injection hygiene.** The only free text sent to the model is the city name, which is stripped to letters, spaces, hyphens and apostrophes.
 

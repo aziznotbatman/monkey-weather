@@ -5,7 +5,8 @@ import { getAiSettings } from "./env";
 import { buildUserMessage, SYSTEM_PROMPT } from "./prompt";
 import { AiOutfitSchema, type AiOutfit, type DaySummary, type Profile } from "./schema";
 
-export const AI_TIMEOUT_MS = 12_000;
+/** Typical answers take 1.5–3 s; past 8 s a visitor is better served by the backup brain. */
+export const AI_TIMEOUT_MS = 8_000;
 /** Includes any "thinking" tokens on models that count them as output (Gemini does). */
 export const AI_MAX_OUTPUT_TOKENS = 2_000;
 

@@ -85,7 +85,7 @@ If you later switch to a paid provider (e.g. OpenAI), set a **monthly budget lim
 
 Built in:
 - Per-IP rate limit on `/api/outfit`: 20 requests per 10 minutes. **Honest caveat:** it lives in server memory, and Vercel runs several short-lived copies of the server, so it only slows down one noisy visitor. Treat it as best-effort.
-- Strict input checks (sizes, ranges), an AI output limit, a 12-second timeout, at most one quick retry, only same-site requests accepted, nothing logged except status, duration and source.
+- Strict input checks (sizes, ranges), an AI output limit, an 8-second timeout, at most one quick retry (on a second model when the first is busy), only same-site requests accepted, nothing logged except status, duration and source.
 
 The real backstop is a **Vercel Firewall rule**:
 1. Vercel → project → **Firewall** → **Configure** (or **Rules**) → **New Rule**.
