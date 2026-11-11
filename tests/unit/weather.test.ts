@@ -132,6 +132,12 @@ describe("helpers", () => {
     expect(u.searchParams.get("timezone")).toBe("auto");
     expect(u.searchParams.get("forecast_days")).toBe("2");
     expect(u.searchParams.get("hourly")).toContain("apparent_temperature");
+    expect(u.searchParams.get("hourly")).toContain("wind_gusts_10m");
+  });
+  test("coordinates leave the browser rounded to ~1 km", () => {
+    const u = new URL(forecastUrl(45.07123, 7.68987));
+    expect(u.searchParams.get("latitude")).toBe("45.07");
+    expect(u.searchParams.get("longitude")).toBe("7.69");
   });
   test("sanitizePlaceLabel keeps names, drops anything else", () => {
     expect(sanitizePlaceLabel("Saint-Jean-d'Angély")).toBe("Saint-Jean-d'Angély");

@@ -2,13 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { demoForecast } from "@/lib/fixtures";
-import {
-  loadPlace,
-  loadProfile,
-  saveProfile,
-  savePlace,
-  type SavedPlace,
-} from "@/lib/client";
+import { loadPlace, loadProfile, saveProfile, savePlace, type SavedPlace } from "@/lib/client";
+import { placeNameFor } from "@/lib/placeName";
 import { ruleEngine } from "@/lib/ruleEngine";
 import { DEFAULT_PROFILE, type DaySummary, type Outfit, type Profile } from "@/lib/schema";
 import { skyFor } from "@/lib/theme";
@@ -149,14 +144,12 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // A town name instead of "Your location" (gives up after 2.5 s, never errors).
+        const label = await placeNameFor(latitude, longitude);
         setLocating(false);
-        const place: SavedPlace = {
-          label: "Your location",
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          fromGeolocation: true,
-        };
+        const place: SavedPlace = { label, latitude, longitude, fromGeolocation: true };
         savePlace(place);
         void load(place, profile);
       },

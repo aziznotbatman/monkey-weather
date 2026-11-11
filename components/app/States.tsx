@@ -41,8 +41,8 @@ export function Landing({ onLocate, onSearch, locating }: LandingProps) {
         </button>
       </div>
       <p className={styles.fineprint}>
-        Your location is only used to fetch the forecast. It stays in your browser and is never sent
-        to our server.
+        Your location goes from your browser to the weather and town-name services, rounded to about
+        1 km. It is never sent to our server.
       </p>
       <p className={styles.demoLink}>
         Just looking? {/* A full page load on purpose: demo mode is read once on start. */}
@@ -165,7 +165,7 @@ export function Footer({ portfolioUrl }: { portfolioUrl?: string }) {
         </a>
         )
       </p>
-      <p>Your location stays in your browser. No accounts, no cookies, no tracking.</p>
+      <p>Your location never reaches our server. No accounts, no cookies, no tracking.</p>
       <p>
         Made by Aziz
         {portfolioUrl ? (

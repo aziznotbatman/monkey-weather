@@ -47,3 +47,17 @@ export async function savedPlace(page: Page, label = "Turin") {
     );
   }, label);
 }
+
+/** Grant geolocation at the given point and answer the town-name lookup. */
+export async function mockLocation(
+  page: Page,
+  answer: { status?: number; json?: unknown } = { json: { city: "Turin", locality: "Turin" } },
+) {
+  await page.context().grantPermissions(["geolocation"]);
+  await page.context().setGeolocation({ latitude: 45.0703, longitude: 7.6869 });
+  await page.route("https://api.bigdatacloud.net/**", (route) =>
+    answer.status
+      ? route.fulfill({ status: answer.status, body: "" })
+      : route.fulfill({ json: answer.json }),
+  );
+}

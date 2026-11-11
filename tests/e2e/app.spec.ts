@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { SCENARIOS } from "../../lib/fixtures";
-import { mockWeather, savedPlace } from "./mocks";
+import { mockLocation, mockWeather, savedPlace } from "./mocks";
 
 const shot = (name: string, project: string) => `tests/.output/shots/${project}-${name}.png`;
 
@@ -34,6 +34,35 @@ test.describe("landing", () => {
     await page.getByRole("option").first().click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText("umbrella at 17:00");
     await expect(page.getByRole("img", { name: /monkey/i }).first()).toBeVisible();
+  });
+});
+
+test.describe("use my location", () => {
+  test("shows the town name, and asks for it with rounded coordinates", async ({ page }) => {
+    const asked: string[] = [];
+    page.on("request", (r) => {
+      if (r.url().includes("bigdatacloud")) asked.push(r.url());
+    });
+    await mockWeather(page, "big-swing");
+    await mockLocation(page);
+    await page.goto("/");
+    await page.getByRole("button", { name: "Use my location" }).click();
+    await expect(page.getByRole("button", { name: "Turin, change location" })).toBeVisible();
+    expect(asked).toHaveLength(1);
+    expect(new URL(asked[0]).searchParams.get("latitude")).toBe("45.07");
+    const stored = await page.evaluate(() => localStorage.getItem("mw:place"));
+    expect(stored).toContain('"label":"Turin"');
+  });
+
+  test("falls back to 'Your location' when the name lookup fails", async ({ page }) => {
+    await mockWeather(page, "big-swing");
+    await mockLocation(page, { status: 500 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Use my location" }).click();
+    await expect(
+      page.getByRole("button", { name: "Your location, change location" }),
+    ).toBeVisible();
+    await expect(page.locator("article").getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
 

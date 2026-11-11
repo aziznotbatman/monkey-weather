@@ -15,7 +15,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  "connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com",
+  "connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com https://api.bigdatacloud.net",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -107,8 +107,8 @@ From Terminal, the same deploy is: `npx vercel deploy --prod`.
 |---|---|
 | `npm run dev` | Local development server |
 | `npm run build` | Production build |
-| `npm test` | 68 unit tests (rule engine and weather conditions, summary builder, units, contrast) |
-| `npm run test:e2e` | 40 Playwright tests: the 9 demo days and every error state, on mobile and desktop |
+| `npm test` | 73 unit tests (rule engine and weather conditions, summary builder, town-name lookup, units, contrast) |
+| `npm run test:e2e` | 44 Playwright tests: the 9 demo days, "Use my location", every error state, on mobile and desktop |
 | `npm run assets` | Regenerates the portfolio images in `docs/assets/` |
 | `npm run lint` / `npm run typecheck` | Code checks |
 
@@ -120,7 +120,7 @@ First time running Playwright: `npx playwright install chromium`.
 app/                 page.tsx (the app), design/ (monkey sheet), poster/[id] (portfolio composites)
 components/monkey/   the character: anchors, body, expressions, effects, items/
 components/app/      outfit card, change notes, wearing list, day strip, city picker, preferences, states
-lib/                 weather.ts (Open-Meteo + DaySummary), conditions.ts, ruleEngine.ts, lines.ts,
+lib/                 weather.ts (Open-Meteo + DaySummary), placeName.ts (town name), conditions.ts, ruleEngine.ts, lines.ts,
                      wardrobe.ts, tokens.ts
 lib/fixtures/        9 reproducible weather days (also used by ?demo=<id>)
 tests/               unit/ (vitest), e2e/ (playwright), assets/ (image generator)
@@ -140,10 +140,10 @@ Landing: FCP 1.0 s, LCP 1.9 s, TBT 40 ms, CLS 0. Card: FCP 1.0 s, LCP 2.2 s, TBT
 
 ## Privacy
 
-No accounts, no database, no cookies, no analytics, no server-side processing. Your preferences and last city are saved in your own browser (`localStorage`). Your coordinates go only from your browser to Open-Meteo. The outfit is worked out on your device; our server only serves the page.
+No accounts, no database, no cookies, no analytics, no server-side processing. Your preferences and last city are saved in your own browser (`localStorage`). With **Use my location**, your browser sends the coordinates, rounded to about 1 km, to two services and nowhere else: Open-Meteo for the forecast and [BigDataCloud](https://www.bigdatacloud.com/free-api/free-reverse-geocode-to-city-api)'s free client-side reverse geocoder for the town name. If the name lookup fails or takes more than 2.5 s, the card just says "Your location". The outfit is worked out on your device; our server only serves the page.
 
 ## Known limitations
 
-- "Use my location" shows "Your location" rather than a town name: Open-Meteo has no reverse geocoding, and adding another service would mean sending coordinates somewhere else.
+- The town name for "Use my location" depends on BigDataCloud's free service; if it is down, the card says "Your location" instead.
 - Two-hour steps: a 30-minute shower can be averaged away, and the change times are always on even hours.
 - The thresholds were tuned on the 9 demo days and common sense, not on user research.

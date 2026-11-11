@@ -69,8 +69,8 @@ const GeocodeSchema = z.object({
 
 export function forecastUrl(lat: number, lon: number): string {
   const p = new URLSearchParams({
-    latitude: lat.toFixed(3),
-    longitude: lon.toFixed(3),
+    latitude: lat.toFixed(2),
+    longitude: lon.toFixed(2),
     hourly:
       "temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,relative_humidity_2m,uv_index,is_day",
     daily: "sunrise,sunset,uv_index_max",

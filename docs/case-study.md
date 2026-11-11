@@ -70,8 +70,8 @@ TODO(Aziz): your one-line takeaway, e.g. what this taught you about where AI bel
 ## 7. Testing
 
 What was actually done (true as of this draft):
-- **68 automated unit tests**: rule-engine thresholds and every weather condition (storm, gusts, drizzle, downpour, sleet, freezing rain, snow, muggy heat), the profile options, 9 fixture days (from freezing snow in Lugano to a thunderstorm in Genoa and a foggy-then-muggy day in Bologna), the forecast-to-summary builder (including "after 20:00, show tomorrow"), line and headline lengths, and colour contrast for every sky.
-- **40 end-to-end browser tests** on phone and desktop sizes: every fixture day, the tap-to-preview interaction, the wearing list, preferences, every error state, and a check that the page sends no requests to our own server.
+- **73 automated unit tests**: rule-engine thresholds and every weather condition (storm, gusts, drizzle, downpour, sleet, freezing rain, snow, muggy heat), the profile options, 9 fixture days (from freezing snow in Lugano to a thunderstorm in Genoa and a foggy-then-muggy day in Bologna), the forecast-to-summary builder (including "after 20:00, show tomorrow"), line and headline lengths, and colour contrast for every sky.
+- **44 end-to-end browser tests** on phone and desktop sizes: every fixture day, the tap-to-preview interaction, "Use my location" with its town name, the wearing list, preferences, every error state, and a check that the page sends no requests to our own server.
 - **Visual QA loop:** screenshots of every state were reviewed and fixed (e.g. overlapping day-strip markers, a confusing unit default for a European browser set to US English, a "tail" joke left over from the old monkey).
 - **Lighthouse (mobile, live site, 11 Nov 2026):** landing page Performance 100 · Accessibility 100 · Best Practices 96 · SEO 100; outfit card 99 · 100 · 96 · 100, with zero layout shift on both. An earlier card measurement found a layout shift (CLS 0.125) when the result replaced the loading state; the loading state now mirrors the card.
 
