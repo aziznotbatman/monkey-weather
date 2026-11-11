@@ -127,9 +127,14 @@ tests/               unit/ (vitest), e2e/ (playwright), assets/ (image generator
 docs/                case-study.md, assets/, lighthouse/
 ```
 
-## Measured quality (live site, Lighthouse 12, mobile)
+## Measured quality (11 Nov 2026, live site, Lighthouse 12.8, mobile)
 
-LIGHTHOUSE_TABLE
+| Page | Performance | Accessibility | Best Practices | SEO |
+|---|---|---|---|---|
+| Landing `/` | 100 | 100 | 96 | 100 |
+| Outfit card `/?demo=big-swing` | 99 | 100 | 96 | 100 |
+
+Landing: FCP 1.0 s, LCP 1.9 s, TBT 40 ms, CLS 0. Card: FCP 1.0 s, LCP 2.2 s, TBT 0 ms, CLS 0. (The AI version measured 98 / 98 with LCP 2.4 s on both.) Best Practices loses points on a "Content security policy" DevTools issue that doesn't appear in normal browsing; it is most likely Lighthouse's own injected scripts hitting the CSP. Full reports: `docs/lighthouse/*.report.html`.
 
 `npm audit`: 0 vulnerabilities in production dependencies. 8 moderate ones remain in dev-only lint tooling (eslint's minimatch); the suggested fix is a breaking downgrade, so it was left.
 
