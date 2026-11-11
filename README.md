@@ -144,9 +144,9 @@ docs/                case-study.md, assets/, lighthouse/
 | Page | Performance | Accessibility | Best Practices | SEO |
 |---|---|---|---|---|
 | Landing `/` | 98 | 100 | 96 | 100 |
-| Outfit card `/?demo=big-swing` | see `docs/lighthouse/` | | | |
+| Outfit card `/?demo=big-swing` | 98 | 100 | 96 | 100 |
 
-Landing: FCP 1.2 s, LCP 2.4 s, TBT 30 ms, CLS 0. Best Practices loses points on a "Content security policy" DevTools issue that doesn't appear in normal browsing; it is most likely Lighthouse's own injected scripts hitting the CSP. Full reports: `docs/lighthouse/*.report.html`.
+Landing: FCP 1.2 s, LCP 2.4 s, TBT 30 ms, CLS 0. Card: FCP 1.1 s, LCP 2.4 s, TBT 60 ms, CLS 0 (an earlier build measured CLS 0.125 on the card; fixed by giving the loading state the card's layout). Best Practices loses points on a "Content security policy" DevTools issue that doesn't appear in normal browsing; it is most likely Lighthouse's own injected scripts hitting the CSP. Full reports: `docs/lighthouse/*.report.html`.
 
 `npm audit`: 0 vulnerabilities in production dependencies. 8 moderate ones remain in dev-only lint tooling (eslint's minimatch); the suggested fix is a breaking downgrade, so it was left.
 

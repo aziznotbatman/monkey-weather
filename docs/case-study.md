@@ -76,7 +76,7 @@ What was actually done (true as of this draft):
 - **88 automated unit tests**: rule-engine thresholds across 7 fixture days (freezing snow, cold dry, cool rain, mild, warm with high UV, hot, and a "big swing" day from 4 °C to 18 °C with rain at 17:00), the validator's repair logic, the forecast-to-summary builder (including "after 20:00, show tomorrow"), the API's fallback paths, and colour contrast for every sky.
 - **44 end-to-end browser tests** on phone and desktop sizes: every fixture day, the tap-to-preview interaction, preferences, and every error state.
 - **Visual QA loop:** screenshots of every state were reviewed and fixed (e.g. overlapping day-strip markers, a confusing unit default for a European browser set to US English, a "tail" joke left over from the old monkey).
-- **Lighthouse (mobile, live site, 11 Nov 2026):** landing page Performance 98 · Accessibility 100 · Best Practices 96 · SEO 100. See `docs/lighthouse/` for the reports and the outfit-card numbers.
+- **Lighthouse (mobile, live site, 11 Nov 2026):** landing page and outfit card both scored Performance 98 · Accessibility 100 · Best Practices 96 · SEO 100. The first card measurement found a layout shift (CLS 0.125) when the result replaced the loading state; the loading state now mirrors the card, and CLS is 0.
 
 TODO(Aziz): user testing. Even 3–5 people trying it on their phone would make this section much stronger: what did they expect, what confused them, did they trust the chimp? Add quotes only if you collected them.
 
