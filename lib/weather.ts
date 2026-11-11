@@ -38,6 +38,9 @@ export const ForecastSchema = z.object({
     precipitation: z.array(num),
     weather_code: z.array(num),
     wind_speed_10m: z.array(num),
+    // Optional so a partial response still works: gusts fall back to wind, humidity to 50 %.
+    wind_gusts_10m: z.array(num).optional(),
+    relative_humidity_2m: z.array(num).optional(),
     uv_index: z.array(num),
     is_day: z.array(num),
   }),
@@ -69,7 +72,7 @@ export function forecastUrl(lat: number, lon: number): string {
     latitude: lat.toFixed(3),
     longitude: lon.toFixed(3),
     hourly:
-      "temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,uv_index,is_day",
+      "temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,relative_humidity_2m,uv_index,is_day",
     daily: "sunrise,sunset,uv_index_max",
     timezone: "auto",
     forecast_days: "2",
@@ -159,7 +162,7 @@ export interface BuildOptions {
 /**
  * Compress the hourly forecast into ~9 two-hour points for the chosen day.
  * Each point aggregates its 2-hour window: mean feels-like, max rain chance,
- * summed rain, max wind and UV, most severe weather code.
+ * summed rain, max wind, gusts and UV, mean humidity, most severe weather code.
  */
 export function buildDaySummary(fc: Forecast, opts: BuildOptions): DaySummary | null {
   const now = localNow(fc.utc_offset_seconds, opts.nowMs);
@@ -196,6 +199,10 @@ export function buildDaySummary(fc: Forecast, opts: BuildOptions): DaySummary | 
       rainProb: Math.round(Math.max(...ids.map((i) => clean(H.precipitation_probability[i])))),
       rainMm: round1(ids.reduce((a, i) => a + clean(H.precipitation[i]), 0)),
       windKmh: Math.round(Math.max(...ids.map((i) => clean(H.wind_speed_10m[i])))),
+      gustKmh: Math.round(
+        Math.max(...ids.map((i) => clean(H.wind_gusts_10m?.[i], clean(H.wind_speed_10m[i])))),
+      ),
+      humidity: Math.round(avg(ids.map((i) => clean(H.relative_humidity_2m?.[i], 50)))),
       uv: round1(Math.max(...ids.map((i) => clean(H.uv_index[i])))),
       weatherCode: Math.round(Math.max(...ids.map((i) => clean(H.weather_code[i])))),
       isDay: clean(H.is_day[first], 1) === 1,
@@ -217,6 +224,7 @@ export function buildDaySummary(fc: Forecast, opts: BuildOptions): DaySummary | 
     maxRainProb: Math.max(...points.map((p) => p.rainProb)),
     totalRainMm: round1(hourIdx.reduce((a, i) => a + clean(H.precipitation[i]), 0)),
     maxWindKmh: Math.max(...points.map((p) => p.windKmh)),
+    maxGustKmh: Math.max(...points.map((p) => p.gustKmh)),
     maxUv: Math.max(...points.map((p) => p.uv)),
     hours: points,
   };

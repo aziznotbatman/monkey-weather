@@ -1,5 +1,6 @@
 "use client";
 
+import { isWindy } from "@/lib/conditions";
 import { ChangeNotes } from "@/components/app/ChangeNotes";
 import { DayStrip } from "@/components/app/DayStrip";
 import { Monkey } from "@/components/monkey/Monkey";
@@ -38,7 +39,7 @@ export function Poster({ id }: { id: string }) {
           outfit={plan.base}
           mood={plan.mood}
           sky={kind}
-          windy={first.windKmh >= WINDY_KMH}
+          windy={first.windKmh >= WINDY_KMH || isWindy(first)}
           className={styles.monkey}
         />
       </section>

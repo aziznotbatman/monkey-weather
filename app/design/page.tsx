@@ -155,6 +155,45 @@ const OUTFITS: Array<{
     mood: "happy",
     sky: "clear",
   },
+  {
+    name: "Ear muffs, smart",
+    outfit: {
+      head: "earmuffs",
+      neck: "scarf",
+      top: "shirt",
+      outer: "puffer",
+      bottom: "trousers",
+      footwear: "boots",
+      hands: "gloves",
+    },
+    mood: "shivering",
+    sky: "clear",
+  },
+  {
+    name: "Gusty and mild",
+    outfit: { top: "longsleeve", outer: "windbreaker", bottom: "trousers", footwear: "sneakers" },
+    mood: "windblown",
+    sky: "overcast",
+    windy: true,
+  },
+  {
+    name: "Cycling, cool",
+    outfit: { top: "hoodie", outer: "vest", bottom: "trousers", footwear: "sneakers" },
+    mood: "happy",
+    sky: "partly",
+  },
+  {
+    name: "Downpour, cycling",
+    outfit: { top: "sweater", outer: "raincoat", bottom: "rainpants", footwear: "rainboots" },
+    mood: "soggy",
+    sky: "storm",
+  },
+  {
+    name: "Muggy",
+    outfit: { top: "shirt", bottom: "shorts", footwear: "sneakers", carry: "bottle" },
+    mood: "sweaty",
+    sky: "overcast",
+  },
   { name: "Just fur", outfit: {}, mood: "happy", sky: "partly" },
 ];
 
@@ -175,7 +214,7 @@ export default function DesignPage() {
         <h1>The monkey sheet</h1>
         <p>
           Monkey Weather&rsquo;s character and wardrobe system. One original chimp drawn on a fixed
-          skeleton (viewBox 600 × 800), 20 garments in 9 slots, 7 faces. Every layer is a
+          skeleton (viewBox 600 × 800), 26 garments in 9 slots, 7 faces. Every layer is a
           hand-authored SVG path with a separate line layer (wobble filter) and a flat fill layer.
         </p>
       </header>
@@ -202,7 +241,7 @@ export default function DesignPage() {
       </section>
 
       <section className={styles.section} aria-labelledby="items">
-        <h2 id="items">Wardrobe: 20 items, 9 slots</h2>
+        <h2 id="items">Wardrobe: 26 items, 9 slots</h2>
         <ul className={styles.items}>
           {ITEM_IDS.map((id) => (
             <li key={id} className={styles.item}>

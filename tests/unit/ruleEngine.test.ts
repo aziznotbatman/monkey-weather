@@ -2,23 +2,12 @@ import { describe, expect, test } from "vitest";
 import { SCENARIOS } from "@/lib/fixtures";
 import { outfitAt } from "@/lib/outfitState";
 import { effectiveTemp, moodFor, ruleEngine, targetAt } from "@/lib/ruleEngine";
-import { MONKEY_LINES } from "@/lib/lines";
-import { OutfitPlanSchema, type HourPoint } from "@/lib/schema";
+import { CONDITION_HEADLINES, CONDITION_LINES, MONKEY_LINES, STEADY_HEADLINES } from "@/lib/lines";
+import { dayCondition, precipAt } from "@/lib/conditions";
+import { OutfitPlanSchema } from "@/lib/schema";
 import { findClash, ITEM_SLOT, REQUIRED_SLOTS } from "@/lib/wardrobe";
-import { profile, summaryFor } from "./helpers";
+import { point, profile, summaryFor } from "./helpers";
 
-const point = (p: Partial<HourPoint>): HourPoint => ({
-  time: "09:00",
-  feelsLikeC: 15,
-  tempC: 15,
-  rainProb: 0,
-  rainMm: 0,
-  windKmh: 5,
-  uv: 1,
-  weatherCode: 0,
-  isDay: true,
-  ...p,
-});
 const day = { heavyRain: false };
 
 describe("effectiveTemp", () => {
@@ -32,7 +21,7 @@ describe("effectiveTemp", () => {
 
 describe("targetAt thresholds", () => {
   test.each([
-    [30, { top: "tshirt", bottom: "shorts", footwear: "sandals" }],
+    [30, { top: "tshirt", bottom: "shorts", footwear: "sandals", carry: "bottle" }],
     [24, { top: "tshirt", bottom: "shorts", footwear: "sneakers" }],
     [22, { top: "tshirt", bottom: "trousers", footwear: "sneakers" }],
     [17, { top: "longsleeve", outer: "lightjacket", bottom: "trousers", footwear: "sneakers" }],
@@ -109,7 +98,11 @@ describe("targetAt thresholds", () => {
   });
 
   test("snow wants boots, not an umbrella", () => {
-    const s = targetAt(point({ feelsLikeC: -3, rainProb: 80, weatherCode: 73 }), profile(), day);
+    const s = targetAt(
+      point({ feelsLikeC: -3, tempC: -1, rainProb: 80, weatherCode: 73 }),
+      profile(),
+      day,
+    );
     expect(s.footwear).toBe("boots");
     expect(s.carry).toBeUndefined();
   });
@@ -137,11 +130,11 @@ describe("ruleEngine across fixtures", () => {
     }
   });
 
-  test("the seven scenarios produce seven different day plans", () => {
+  test("every scenario produces a different day plan", () => {
     const keys = new Set(
       plans.map(([, p]) => JSON.stringify([p.base, p.changes.map((c) => c.action + c.item)])),
     );
-    expect(keys.size).toBe(7);
+    expect(keys.size).toBe(SCENARIOS.length);
   });
 
   test("big swing day: lighter outer late morning, umbrella at 17:00", () => {
@@ -183,15 +176,125 @@ describe("mood and lines", () => {
     expect(moodFor(point({}), profile())).toBe("happy");
   });
 
-  test("there are at least 25 one-liners, all <= 120 chars", () => {
-    const all = Object.values(MONKEY_LINES).flat();
-    expect(all.length).toBeGreaterThanOrEqual(25);
+  test("plenty of one-liners, all <= 120 chars, no duplicates", () => {
+    const all = [...Object.values(MONKEY_LINES), ...Object.values(CONDITION_LINES)].flat();
+    expect(all.length).toBeGreaterThanOrEqual(70);
+    expect(new Set(all).size).toBe(all.length);
     for (const l of all) expect(l.length).toBeLessThanOrEqual(120);
+  });
+
+  test("every headline fits in 60 chars", () => {
+    const all = [...Object.values(STEADY_HEADLINES), ...Object.values(CONDITION_HEADLINES)].flat();
+    for (const h of all) expect(h.length).toBeLessThanOrEqual(60);
   });
 
   test("same day, same line (deterministic)", () => {
     expect(ruleEngine(summaryFor("cold-dry"), profile())).toEqual(
       ruleEngine(summaryFor("cold-dry"), profile()),
     );
+  });
+});
+
+describe("weather conditions", () => {
+  const walk = profile();
+  const bike = profile({ getAround: "cycling" });
+
+  test("weather codes map to the right kind of precipitation", () => {
+    expect(precipAt(point({ weatherCode: 53 }))).toBe("drizzle");
+    expect(precipAt(point({ weatherCode: 63 }))).toBe("rain");
+    expect(precipAt(point({ weatherCode: 63, rainMm: 5 }))).toBe("downpour");
+    expect(precipAt(point({ weatherCode: 65 }))).toBe("downpour");
+    expect(precipAt(point({ weatherCode: 63, tempC: 0 }))).toBe("sleet");
+    expect(precipAt(point({ weatherCode: 73, tempC: -2 }))).toBe("snow");
+    expect(precipAt(point({ weatherCode: 73, tempC: 4 }))).toBe("sleet");
+    expect(precipAt(point({ weatherCode: 67 }))).toBe("freezing");
+    expect(precipAt(point({ weatherCode: 95 }))).toBe("storm");
+    expect(precipAt(point({ weatherCode: 3, rainProb: 70 }))).toBe("rain");
+    expect(precipAt(point({ weatherCode: 45 }))).toBe("none");
+  });
+
+  test("storm: no umbrella under lightning, raincoat instead", () => {
+    const s = targetAt(point({ weatherCode: 95, rainProb: 90 }), walk, day);
+    expect(s.carry).toBeUndefined();
+    expect(s.outer).toBe("raincoat");
+  });
+
+  test("gusts: no umbrella, no brimmed hats, windbreaker when mild", () => {
+    const rainyGust = targetAt(point({ weatherCode: 63, rainProb: 80, gustKmh: 60 }), walk, day);
+    expect(rainyGust.carry).toBeUndefined();
+    expect(rainyGust.outer).toBe("raincoat");
+    const sunnyGust = targetAt(point({ feelsLikeC: 24, uv: 8, gustKmh: 60 }), walk, day);
+    expect(sunnyGust.eyes).toBe("sunglasses");
+    expect(sunnyGust.head).toBeUndefined();
+    expect(targetAt(point({ feelsLikeC: 17, windKmh: 30 }), walk, day).outer).toBe("windbreaker");
+  });
+
+  test("drizzle: a windbreaker, not an umbrella", () => {
+    const s = targetAt(point({ feelsLikeC: 13, weatherCode: 53, rainProb: 70 }), walk, day);
+    expect(s.outer).toBe("windbreaker");
+    expect(s.carry).toBeUndefined();
+  });
+
+  test("downpour on foot: the full fisherman kit", () => {
+    const s = targetAt(point({ weatherCode: 65, rainProb: 95, rainMm: 8 }), walk, day);
+    expect(s).toMatchObject({
+      outer: "raincoat",
+      carry: "umbrella",
+      bottom: "rainpants",
+      footwear: "rainboots",
+    });
+  });
+
+  test("cycling in rain: rain trousers and raincoat, never an umbrella", () => {
+    const s = targetAt(point({ weatherCode: 63, rainProb: 80 }), bike, day);
+    expect(s).toMatchObject({ outer: "raincoat", bottom: "rainpants" });
+    expect(s.carry).toBeUndefined();
+  });
+
+  test("sleet and freezing rain: boots with grip, gloves and a hat when cold", () => {
+    const sleet = targetAt(
+      point({ feelsLikeC: 1, tempC: 0, weatherCode: 63, rainProb: 80 }),
+      walk,
+      day,
+    );
+    expect(sleet).toMatchObject({ footwear: "boots", hands: "gloves", head: "beanie" });
+    const ice = targetAt(
+      point({ feelsLikeC: 2, tempC: 1.5, weatherCode: 67, rainProb: 80 }),
+      walk,
+      day,
+    );
+    expect(ice.footwear).toBe("boots");
+    expect(ice.outer).toBe("puffer");
+  });
+
+  test("hot or muggy: a water bottle, unless it's raining", () => {
+    expect(targetAt(point({ feelsLikeC: 29 }), walk, day).carry).toBe("bottle");
+    expect(targetAt(point({ feelsLikeC: 24, humidity: 85 }), walk, day).carry).toBe("bottle");
+    expect(targetAt(point({ feelsLikeC: 24, humidity: 40 }), walk, day).carry).toBeUndefined();
+    expect(
+      targetAt(point({ feelsLikeC: 29, weatherCode: 63, rainProb: 80 }), walk, day).carry,
+    ).toBe("umbrella");
+  });
+
+  test("style and profile pick the new pieces", () => {
+    const smart = profile({ style: "smart" });
+    expect(targetAt(point({ feelsLikeC: 5 }), smart, day).head).toBe("earmuffs");
+    expect(targetAt(point({ feelsLikeC: 23 }), smart, day).top).toBe("shirt");
+    expect(targetAt(point({ feelsLikeC: 19 }), bike, day).outer).toBe("vest");
+    expect(targetAt(point({ feelsLikeC: 16 }), profile({ sensitivity: "warm" }), day).outer).toBe(
+      "vest",
+    );
+    expect(targetAt(point({ feelsLikeC: 11 }), bike, day).outer).toBe("windbreaker");
+  });
+
+  test("muggy heat makes him sweaty; gusts make him windblown", () => {
+    expect(moodFor(point({ feelsLikeC: 25, humidity: 85 }), walk)).toBe("sweaty");
+    expect(moodFor(point({ gustKmh: 60 }), walk)).toBe("windblown");
+  });
+
+  test("each fixture day gets the notable condition it was built for", () => {
+    expect(dayCondition(summaryFor("freezing-snow"))).toBe("snow");
+    expect(dayCondition(summaryFor("big-swing"))).toBe("swing");
+    expect(dayCondition(summaryFor("mild-clear"))).toBeNull();
   });
 });

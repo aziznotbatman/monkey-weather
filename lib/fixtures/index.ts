@@ -1,7 +1,7 @@
 import type { Forecast } from "../weather";
 
 /**
- * Seven reproducible weather scenarios shaped exactly like Open-Meteo responses.
+ * Reproducible weather scenarios shaped exactly like Open-Meteo responses.
  * Used by unit tests, the /design sheet and the Playwright screenshots.
  * "Today" is FIXTURE_DATE in Europe/Rome (UTC+1); FIXTURE_NOW is 06:30 local.
  */
@@ -35,6 +35,10 @@ export interface ScenarioSpec {
   rainProb: Keys;
   rainMm: Keys;
   wind: Keys;
+  /** Gusts; default 1.4 × wind. */
+  gust?: Keys;
+  /** Relative humidity %; default 60. */
+  humidity?: Keys;
   uv: Keys;
   code: (h: number) => number;
 }
@@ -208,6 +212,77 @@ export const SCENARIOS: ScenarioSpec[] = [
     uv: dayUv(3),
     code: (h) => (h >= 17 ? 63 : h >= 13 ? 2 : 1),
   },
+  {
+    id: "stormy",
+    title: "Gusty, thunderstorms from mid-afternoon",
+    place: "Genoa",
+    feels: [
+      [0, 14],
+      [7, 15],
+      [13, 18],
+      [15, 17],
+      [19, 14],
+      [23, 13],
+    ],
+    airOffset: 2,
+    rainProb: [
+      [0, 10],
+      [12, 20],
+      [14, 55],
+      [15, 90],
+      [21, 85],
+      [23, 60],
+    ],
+    rainMm: [
+      [0, 0],
+      [14, 0],
+      [15, 3],
+      [19, 2],
+      [23, 0.5],
+    ],
+    wind: [
+      [0, 18],
+      [11, 28],
+      [15, 38],
+      [23, 30],
+    ],
+    gust: [
+      [0, 30],
+      [11, 52],
+      [15, 70],
+      [23, 50],
+    ],
+    humidity: flat(75),
+    uv: dayUv(3),
+    code: (h) => (h >= 15 && h < 21 ? 95 : h >= 21 ? 61 : h >= 11 ? 3 : 2),
+  },
+  {
+    id: "muggy",
+    title: "Foggy morning, muggy afternoon",
+    place: "Bologna",
+    feels: [
+      [0, 21],
+      [7, 22],
+      [11, 26],
+      [13, 30],
+      [17, 29],
+      [21, 25],
+      [23, 23],
+    ],
+    airOffset: -3,
+    rainProb: flat(10),
+    rainMm: flat(0),
+    wind: flat(6),
+    humidity: [
+      [0, 95],
+      [9, 92],
+      [13, 78],
+      [17, 74],
+      [23, 85],
+    ],
+    uv: dayUv(5),
+    code: (h) => (h < 10 ? 45 : h < 13 ? 2 : 1),
+  },
 ];
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -227,6 +302,8 @@ export function scenarioForecast(spec: ScenarioSpec, today: string = FIXTURE_DAT
   const mm = curve(spec.rainMm);
   const wind = curve(spec.wind);
   const uv = curve(spec.uv);
+  const gust = spec.gust ? curve(spec.gust) : (h: number) => wind(h) * 1.4;
+  const humidity = curve(spec.humidity ?? flat(60));
   const time: string[] = [];
   const out = {
     temperature_2m: [] as number[],
@@ -235,6 +312,8 @@ export function scenarioForecast(spec: ScenarioSpec, today: string = FIXTURE_DAT
     precipitation: [] as number[],
     weather_code: [] as number[],
     wind_speed_10m: [] as number[],
+    wind_gusts_10m: [] as number[],
+    relative_humidity_2m: [] as number[],
     uv_index: [] as number[],
     is_day: [] as number[],
   };
@@ -247,6 +326,8 @@ export function scenarioForecast(spec: ScenarioSpec, today: string = FIXTURE_DAT
       out.precipitation.push(r1(mm(h)));
       out.weather_code.push(spec.code(h));
       out.wind_speed_10m.push(Math.round(wind(h)));
+      out.wind_gusts_10m.push(Math.round(gust(h)));
+      out.relative_humidity_2m.push(Math.round(humidity(h)));
       out.uv_index.push(r1(uv(h)));
       out.is_day.push(h >= 7 && h < 17 ? 1 : 0);
     }

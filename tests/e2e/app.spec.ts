@@ -59,9 +59,9 @@ test("big swing: tapping a note previews the monkey at that time", async ({ page
   const worn = page.getByRole("region", { name: /Wearing from 07:00/ });
   await expect(worn.getByRole("listitem")).toHaveText([
     "Puffer jacket",
-    "Sweater",
+    "Hoodie",
     "Trousers",
-    "Boots",
+    "Rain boots",
     "Beanie",
     "Scarf",
   ]);

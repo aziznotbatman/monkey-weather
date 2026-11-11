@@ -1,4 +1,4 @@
-/** The fixed wardrobe vocabulary. The AI may only choose from these ids. */
+/** The fixed wardrobe: every item is drawn on the same chimp skeleton. */
 
 export const SLOTS = [
   "head",
@@ -17,23 +17,29 @@ export const ITEM_SLOT = {
   beanie: "head",
   cap: "head",
   sunhat: "head",
+  earmuffs: "head",
   sunglasses: "eyes",
   scarf: "neck",
   tshirt: "top",
   longsleeve: "top",
   sweater: "top",
   hoodie: "top",
+  shirt: "top",
   lightjacket: "outer",
   raincoat: "outer",
   puffer: "outer",
+  windbreaker: "outer",
+  vest: "outer",
   shorts: "bottom",
   trousers: "bottom",
+  rainpants: "bottom",
   sandals: "footwear",
   sneakers: "footwear",
   boots: "footwear",
   rainboots: "footwear",
   gloves: "hands",
   umbrella: "carry",
+  bottle: "carry",
 } as const satisfies Record<string, Slot>;
 
 export type ItemId = keyof typeof ITEM_SLOT;
@@ -50,23 +56,29 @@ export const ITEM_LABEL: Record<ItemId, string> = {
   beanie: "beanie",
   cap: "cap",
   sunhat: "sun hat",
+  earmuffs: "ear muffs",
   sunglasses: "sunglasses",
   scarf: "scarf",
   tshirt: "T-shirt",
   longsleeve: "long-sleeve top",
   sweater: "sweater",
   hoodie: "hoodie",
+  shirt: "shirt",
   lightjacket: "light jacket",
   raincoat: "raincoat",
   puffer: "puffer jacket",
+  windbreaker: "windbreaker",
+  vest: "puffer vest",
   shorts: "shorts",
   trousers: "trousers",
+  rainpants: "rain trousers",
   sandals: "sandals",
   sneakers: "sneakers",
   boots: "boots",
   rainboots: "rain boots",
   gloves: "gloves",
   umbrella: "umbrella",
+  bottle: "water bottle",
 };
 
 /** Pairs that must never be worn together (same-slot clashes are impossible by construction). */
@@ -77,6 +89,9 @@ export const IMPOSSIBLE_PAIRS: ReadonlyArray<readonly [ItemId, ItemId]> = [
   ["sandals", "gloves"],
   ["shorts", "gloves"],
   ["sunhat", "scarf"],
+  ["earmuffs", "sandals"],
+  ["earmuffs", "shorts"],
+  ["rainpants", "sandals"],
 ];
 
 export const MOODS = ["happy", "shivering", "soggy", "sweaty", "windblown"] as const;

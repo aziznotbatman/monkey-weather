@@ -10,7 +10,16 @@ import { mockWeather, savedPlace } from "../e2e/mocks";
  *   poster-<id>-2800x1700.png        landscape composite for Figma/Behance
  */
 const OUT = "docs/assets";
-const SIX = ["freezing-snow", "cool-rain", "mild-clear", "warm-uv", "hot", "big-swing"];
+const DAYS = [
+  "freezing-snow",
+  "cool-rain",
+  "mild-clear",
+  "warm-uv",
+  "hot",
+  "big-swing",
+  "stormy",
+  "muggy",
+];
 
 test.use({ deviceScaleFactor: 2 });
 
@@ -28,7 +37,7 @@ test("landing", async ({ page }) => {
   await page.screenshot({ path: `${OUT}/landing-mobile.png` });
 });
 
-for (const id of SIX) {
+for (const id of DAYS) {
   test(`scenario ${id}`, async ({ page }) => {
     await mockWeather(page, id);
     await savedPlace(page, (await import("../../lib/fixtures")).scenarioById(id)?.place);

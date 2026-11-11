@@ -40,44 +40,38 @@ The character carries the personality: deadpan, a bit ugly, dry-witted ("My ears
 | **The sky colour is the weather.** Warm yellow for sun, deep blue for rain, icy blue for snow, navy at night. | You read the day from across the room. Every background has its text colour checked for WCAG AA contrast in an automated test. | `poster-*-2800x1700.png` |
 | **A day strip, not a chart.** Feels-like curve, rain bars, one UV marker, numbered change markers. | Shows *why* the notes exist. It also has a screen-reader list version. | `card-*-mobile-full.png` |
 | **An original, deadpan chimp in thick marker line with flat fills.** | Reference images set the line quality and mood (fat wobbly outline, flat colour, strong blue ground), not the character. The chimp is new: big jug ears, heavy brow, long pouty muzzle, long arms. | `monkey-sheet.png` |
-| **Fixed wardrobe: 20 items in 9 slots, drawn on one skeleton.** | Every garment is authored against the same anchor points, so any combination fits. It also makes the AI's job safe (see 5). | `monkey-sheet.png` |
-| **Location only after a tap; nothing stored on the server.** | Trust. The forecast is fetched by the visitor's own browser; the server never sees coordinates. | Landing screen |
-| **Honest fallback.** When the rule engine answers instead of the AI, the card says "Monkey's backup brain is on duty". | Being upfront about what produced the answer. | Any card without a key |
+| **Fixed wardrobe: 26 items in 9 slots, drawn on one skeleton.** | Every garment is authored against the same anchor points, so any combination fits, from ear muffs over jug ears to a full yellow rain suit. | `monkey-sheet.png` |
+| **Location only after a tap; everything happens on the device.** | Trust. The forecast is fetched by the visitor's own browser and the outfit is worked out there too: the server only serves the page. | Landing screen |
+| **Dress once, change layers.** Top, trousers and shoes are chosen for the whole day; only jackets and accessories change, at most four times. | Nobody changes trousers at 11:00. Early versions did; it read as a bug. | `card-*-mobile-full.png` |
 | **"Wearing" list under the notes.** Every piece on the chimp as a small drawing with its name; it follows the tapped note and highlights what just changed. | The drawing is the fun part, the list is the scannable part: you can check the outfit in one glance, without decoding the illustration. | `card-*-mobile-full.png` |
 | **Error states with a face.** Location denied, city not found, offline, forecast failed, too many requests: each has a chimp expression and a plain sentence with a next step. | No raw errors, no blank screens. | e2e screenshots |
 
 TODO(Aziz): pick the 3–4 decisions you're proudest of for the portfolio page, and say in your words what you tried first and changed. (One real example from the build: the first character was a cute generic monkey. Seeing it next to the references, I redirected it to a funnier, slightly ugly chimp inspired by vintage dressed-chimp photography.)
 
-## 5. How the AI fits, and where it must not decide alone
+## 5. Why there's no AI in the outfit
 
-The AI (Google Gemini Flash-Lite on its free tier, through an OpenAI-compatible API so the provider can be swapped) is used for one thing: turning a compact day summary plus a tiny profile (runs cold/warm, walks/cycles/takes transit, casual/smart) into an outfit plan and a line of copy in the chimp's voice.
+The outfit comes from a hand-written rule engine: an expert system, plain rules with no machine learning. It reads feels-like temperature, rain chance and amount, the weather code (drizzle, downpour, sleet, freezing rain, snow, thunderstorm, fog), wind and gusts, humidity and UV, adjusts for the person (runs cold or warm, walks, cycles or takes transit, casual or smart), and plans the day: what to put on, and the few moments to change it, with a debounce so nothing flickers.
 
-It is deliberately **boxed in**:
-- **Fixed vocabulary.** It can only choose item ids from the 20-item wardrobe, slot by slot, through a strict JSON schema (Structured Outputs). It can't invent a garment the chimp can't wear.
-- **Validation and repair on the server.** Every answer is checked: right item in the right slot, top/bottom/shoes always present, no impossible combinations (puffer + shorts), change times inside the day and in order, only removing what's worn, max four changes, text length caps. Small problems are repaired; anything too broken is thrown away.
-- **A deterministic fallback.** A rule engine (thresholds on feels-like temperature, rain, wind and UV, with a debounce so the outfit doesn't flicker) produces the same kind of plan. It runs whenever there's no key, the model is slow (8 s timeout), errors, or returns nonsense. It also runs in the visitor's browser if our server can't be reached.
-- **The server decides the source**, not the model. The card's "backup brain" note is set by the server.
-- **Prompt-injection hygiene.** The only free text sent to the model is the city name, which is stripped to letters, spaces, hyphens and apostrophes.
+It didn't start that way. The first version asked an LLM (Google Gemini Flash-Lite, free tier) for the plan, boxed in by a fixed vocabulary, a strict JSON schema and a server-side validator, with the rule engine as a fallback.
 
-The result: the AI can make the outfit *smarter and the copy warmer*, but it can never make the product *wrong or broken*.
+**What a side-by-side test showed (11 Nov 2026, 8 fixture days × profiles):** planning from scratch, the model made worse outfits than the rules (a light jacket at 4 °C, rain boots in snow, a forgotten umbrella on a rainy afternoon), wrote headlines that were titles rather than instructions ("Melting in Palermo"), and copied the example lines it was given. Giving it the rule engine's plan as a draft fixed the outfits, but then it was mostly rewording the rules, with 2–12 s waits and regular "model overloaded" errors on the free tier.
 
-**What the first live comparison showed (11 Nov 2026, 8 fixture days × profiles, Gemini Flash-Lite free tier):** asked to plan from scratch, the AI made worse outfits than the rule engine (a light jacket at 4 °C, rain boots in snow, a forgotten umbrella), wrote headlines that were titles rather than instructions ("Melting in Palermo"), and copied the example lines it was given. So the roles changed: the AI now gets the rule engine's outfit as a **draft**, may change it only with a concrete reason from the data, and mainly writes the words. The validator enforces the rest: a headline must name a real change time, a missing umbrella on a rainy afternoon is put back, and a copied house line is swapped for the day's own. After that, the AI's outfits matched or sensibly adjusted the draft (e.g. a lighter layer for someone who runs warm and takes the tram). Some free-tier calls still time out or hit "high demand", and the backup brain answers those.
+So the model was removed, and the effort went into the rules instead: more weather situations, six new garments, "dress once, change layers", and a much larger set of hand-written lines for the chimp, picked by the day's mood and its most notable weather. The result is instant, free to run, works offline once the forecast is loaded, gives the same answer every time, and sends nothing about the visitor to a server.
 
 TODO(Aziz): your one-line takeaway, e.g. what this taught you about where AI belongs in a product.
 
 ## 6. Build
 
-- Next.js + TypeScript on Vercel's free Hobby plan; one server route for the AI. Weather from Open-Meteo, called from the browser.
+- Next.js + TypeScript on Vercel's free Hobby plan. No backend logic: weather from Open-Meteo, called from the browser; the rule engine runs in the browser too.
 - The chimp is drawn **in code**: hand-authored SVG paths on a 600 × 800 skeleton, with a separate ink layer for the outline. An SVG turbulence filter wobbles only the ink, so the line looks like marker while fills stay clean.
 - All colours, line widths, radii and type sizes live in one tokens file.
-- Abuse and cost protection: input limits, rate limiting, a 30-minute cache, a same-site check, small output limits, and a free-tier AI key with no billing attached.
 - Privacy: no accounts, cookies, analytics or database. Preferences live in the browser.
 
 ## 7. Testing
 
 What was actually done (true as of this draft):
-- **88 automated unit tests**: rule-engine thresholds across 7 fixture days (freezing snow, cold dry, cool rain, mild, warm with high UV, hot, and a "big swing" day from 4 °C to 18 °C with rain at 17:00), the validator's repair logic, the forecast-to-summary builder (including "after 20:00, show tomorrow"), the API's fallback paths, and colour contrast for every sky.
-- **44 end-to-end browser tests** on phone and desktop sizes: every fixture day, the tap-to-preview interaction, preferences, and every error state.
+- **68 automated unit tests**: rule-engine thresholds and every weather condition (storm, gusts, drizzle, downpour, sleet, freezing rain, snow, muggy heat), the profile options, 9 fixture days (from freezing snow in Lugano to a thunderstorm in Genoa and a foggy-then-muggy day in Bologna), the forecast-to-summary builder (including "after 20:00, show tomorrow"), line and headline lengths, and colour contrast for every sky.
+- **40 end-to-end browser tests** on phone and desktop sizes: every fixture day, the tap-to-preview interaction, the wearing list, preferences, every error state, and a check that the page sends no requests to our own server.
 - **Visual QA loop:** screenshots of every state were reviewed and fixed (e.g. overlapping day-strip markers, a confusing unit default for a European browser set to US English, a "tail" joke left over from the old monkey).
 - **Lighthouse (mobile, live site, 11 Nov 2026):** landing page and outfit card both scored Performance 98 · Accessibility 100 · Best Practices 96 · SEO 100. The first card measurement found a layout shift (CLS 0.125) when the result replaced the loading state; the loading state now mirrors the card, and CLS is 0.
 
@@ -85,7 +79,7 @@ TODO(Aziz): user testing. Even 3–5 people trying it on their phone would make 
 
 ## 8. What I'd do next
 
-- Test the AI path with real days and tune the prompt against the rule engine.
+- Tune the thresholds with real people: when do *they* reach for a jacket?
 - Morning notification ("Puffer today, umbrella at 17:00"), the natural next step for a habit product.
 - A shareable card image.
 - A wider wardrobe (layers for rain + cold together, a shell for cyclists) and more poses.
@@ -95,7 +89,7 @@ TODO(Aziz): user testing. Even 3–5 people trying it on their phone would make 
 
 ## Behance-style description (≤ 150 words)
 
-Monkey Weather turns the forecast into an outfit. Weather apps give you numbers; this one gives you a hand-drawn chimp wearing exactly what to put on, plus a few sticky notes telling you when to change it ("17:00 · add umbrella · rain from 17:00"). Tap a note and the chimp changes clothes while the sky changes colour. AI picks the outfit, but only from a fixed 20-item wardrobe, and every answer is validated, with a rule-based "backup brain" when the AI is unavailable or wrong. The character is original, drawn entirely in code: SVG paths on one skeleton, with a marker-wobble filter on the ink. Built with Next.js on Vercel; weather by Open-Meteo. No accounts, no tracking; your location stays in your browser.
+Monkey Weather turns the forecast into an outfit. Weather apps give you numbers; this one gives you a hand-drawn chimp wearing exactly what to put on, plus a few sticky notes telling you when to change it ("17:00 · add umbrella · rain from 17:00"). Tap a note and the chimp changes clothes while the sky changes colour. A hand-written rule engine picks from a 26-item wardrobe and reacts to drizzle, downpours, storms, gusts, sleet, snow and muggy heat. I tried an LLM first; the rules dressed him better, so they stayed. The character is original, drawn entirely in code: SVG paths on one skeleton, with a marker-wobble filter on the ink. Built with Next.js on Vercel; weather by Open-Meteo. No accounts, no tracking; your location stays in your browser.
 
 ## Six portfolio images, in order
 

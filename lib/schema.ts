@@ -12,6 +12,8 @@ export const HourPointSchema = z
     rainProb: z.number().min(0).max(100),
     rainMm: z.number().min(0).max(300),
     windKmh: z.number().min(0).max(250),
+    gustKmh: z.number().min(0).max(300),
+    humidity: z.number().min(0).max(100),
     uv: z.number().min(0).max(20),
     weatherCode: z.number().int().min(0).max(99),
     isDay: z.boolean(),
@@ -29,6 +31,7 @@ export const DaySummarySchema = z
     maxRainProb: z.number().min(0).max(100),
     totalRainMm: z.number().min(0).max(1000),
     maxWindKmh: z.number().min(0).max(250),
+    maxGustKmh: z.number().min(0).max(300),
     maxUv: z.number().min(0).max(20),
     hours: z.array(HourPointSchema).min(1).max(12),
   })

@@ -6,6 +6,7 @@ import { PinIcon, SlidersIcon } from "@/components/ui/Icons";
 import { changedSlots, outfitAt } from "@/lib/outfitState";
 import { moodFor } from "@/lib/ruleEngine";
 import type { DaySummary, Outfit, Profile } from "@/lib/schema";
+import { isWindy } from "@/lib/conditions";
 import { skyFor, WINDY_KMH } from "@/lib/theme";
 import type { SkyKind } from "@/lib/tokens";
 import { formatTemp } from "@/lib/units";
@@ -156,7 +157,7 @@ export function OutfitCard(props: OutfitCardProps) {
           outfit={shown}
           mood={mood}
           sky={sky}
-          windy={point.windKmh >= WINDY_KMH}
+          windy={point.windKmh >= WINDY_KMH || isWindy(point)}
           popSlots={active === null && popKey === 0 ? [] : popSlots}
           popKey={popKey}
           className={`${styles.monkey} mw-animated`}
