@@ -2,7 +2,13 @@ import { CACHE_TTL_MS, createTtlCache, outfitCacheKey } from "./cache";
 import type { AiFailure } from "./openai";
 import { clientIp, type RateLimitResult } from "./ratelimit";
 import { ruleEngine } from "./ruleEngine";
-import { OutfitRequestSchema, type AiOutfit, type DaySummary, type Outfit, type Profile } from "./schema";
+import {
+  OutfitRequestSchema,
+  type AiOutfit,
+  type DaySummary,
+  type Outfit,
+  type Profile,
+} from "./schema";
 import { validateOutfit } from "./validateOutfit";
 import { sanitizePlaceLabel } from "./weather";
 
@@ -46,8 +52,15 @@ export function isAllowedOrigin(headers: Headers, selfHost: string | null): bool
   }
 }
 
-function json(status: number, body: OutfitResponseBody | ErrorBody, extra: Record<string, string> = {}): Response {
-  return Response.json(body, { status, headers: { "Cache-Control": "private, no-store", ...extra } });
+function json(
+  status: number,
+  body: OutfitResponseBody | ErrorBody,
+  extra: Record<string, string> = {},
+): Response {
+  return Response.json(body, {
+    status,
+    headers: { "Cache-Control": "private, no-store", ...extra },
+  });
 }
 
 export async function handleOutfitRequest(req: Request, deps: ServiceDeps): Promise<Response> {
@@ -57,7 +70,8 @@ export async function handleOutfitRequest(req: Request, deps: ServiceDeps): Prom
     return res;
   };
 
-  if (!isAllowedOrigin(req.headers, req.headers.get("host"))) return done(json(403, { error: "forbidden" }));
+  if (!isAllowedOrigin(req.headers, req.headers.get("host")))
+    return done(json(403, { error: "forbidden" }));
 
   const len = Number(req.headers.get("content-length") ?? "0");
   if (len > MAX_BODY_BYTES) return done(json(413, { error: "too_large" }));
@@ -75,11 +89,20 @@ export async function handleOutfitRequest(req: Request, deps: ServiceDeps): Prom
 
   const limit = deps.rateLimit(clientIp(req.headers));
   if (!limit.ok) {
-    return done(json(429, { error: "rate_limited", retryAfterSec: limit.retryAfterSec }, { "Retry-After": String(limit.retryAfterSec) }));
+    return done(
+      json(
+        429,
+        { error: "rate_limited", retryAfterSec: limit.retryAfterSec },
+        { "Retry-After": String(limit.retryAfterSec) },
+      ),
+    );
   }
 
   const profile = parsed.data.profile;
-  const summary: DaySummary = { ...parsed.data.summary, placeLabel: sanitizePlaceLabel(parsed.data.summary.placeLabel) };
+  const summary: DaySummary = {
+    ...parsed.data.summary,
+    placeLabel: sanitizePlaceLabel(parsed.data.summary.placeLabel),
+  };
   const key = outfitCacheKey(summary, profile);
   const hit = deps.cache.get(key);
   if (hit) return done(json(200, { outfit: hit, cached: true }), hit.source, "cache");
@@ -106,5 +129,9 @@ export async function handleOutfitRequest(req: Request, deps: ServiceDeps): Prom
 
   const outfit: Outfit = { ...checked.plan, source: "ai" };
   deps.cache.set(key, outfit);
-  return done(json(200, { outfit }), "ai", checked.repairs.length ? `repaired:${checked.repairs.length}` : undefined);
+  return done(
+    json(200, { outfit }),
+    "ai",
+    checked.repairs.length ? `repaired:${checked.repairs.length}` : undefined,
+  );
 }

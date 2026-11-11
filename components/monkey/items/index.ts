@@ -50,3 +50,8 @@ export const ITEM_BOX: Record<ItemId, readonly [number, number, number, number]>
   gloves: [150, 570, 300, 80],
   umbrella: [300, 16, 290, 690],
 };
+
+/** Tighter crops for small icons (where the full item box would be too tall). */
+export const ICON_BOX: Partial<Record<ItemId, readonly [number, number, number, number]>> = {
+  umbrella: [304, 16, 282, 220],
+};

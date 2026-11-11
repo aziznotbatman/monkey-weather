@@ -8,7 +8,8 @@ import { AiOutfitSchema, type AiOutfit, type DaySummary, type Profile } from "./
 export const AI_TIMEOUT_MS = 12_000;
 export const AI_MAX_OUTPUT_TOKENS = 600;
 
-export type AiFailure = "no_key" | "timeout" | "rate_limited" | "server_error" | "bad_output" | "error";
+export type AiFailure =
+  "no_key" | "timeout" | "rate_limited" | "server_error" | "bad_output" | "error";
 
 export class AiError extends Error {
   constructor(public readonly kind: AiFailure) {
@@ -25,7 +26,11 @@ function getClient(): OpenAI {
   return client;
 }
 
-async function callOnce(summary: DaySummary, profile: Profile, signal: AbortSignal): Promise<AiOutfit> {
+async function callOnce(
+  summary: DaySummary,
+  profile: Profile,
+  signal: AbortSignal,
+): Promise<AiOutfit> {
   const response = await getClient().responses.parse(
     {
       model: getOpenAiModel(),

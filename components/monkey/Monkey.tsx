@@ -1,10 +1,18 @@
 import type { SkyKind } from "@/lib/tokens";
-import { describeOutfit, SLOTS, wornItems, type ItemId, type OutfitState, type Slot, type UiMood } from "@/lib/wardrobe";
+import {
+  describeOutfit,
+  SLOTS,
+  wornItems,
+  type ItemId,
+  type OutfitState,
+  type Slot,
+  type UiMood,
+} from "@/lib/wardrobe";
 import { VIEWBOX } from "./anchors";
 import { bodyParts, Z, type Pose } from "./body";
 import { Effects } from "./effects";
 import { expressionParts } from "./expressions";
-import { ITEM_ART, ITEM_BOX } from "./items";
+import { ICON_BOX, ITEM_ART, ITEM_BOX } from "./items";
 import { PartView, WobbleDefs, type Part } from "./parts";
 
 export interface MonkeyProps {
@@ -96,7 +104,9 @@ export function Monkey({
       <g className="mw-figure">
         {parts.filter((p) => p.z < HEAD_Z).map(renderPart)}
         {/* The head sits slightly off-axis, like a confident doodle. */}
-        <g transform={`rotate(${HEAD_TILT} 300 350)`}>{parts.filter((p) => p.z >= HEAD_Z).map(renderPart)}</g>
+        <g transform={`rotate(${HEAD_TILT} 300 350)`}>
+          {parts.filter((p) => p.z >= HEAD_Z).map(renderPart)}
+        </g>
       </g>
       {sky && <Effects sky={sky} windy={windy} filter={filter} layer="front" />}
     </svg>
@@ -104,10 +114,22 @@ export function Monkey({
 }
 
 /** A single garment on its own, cropped to its box (design sheet, change-note icons). */
-export function ItemIcon({ item, uid, className, title }: { item: ItemId; uid: string; className?: string; title?: string }) {
+export function ItemIcon({
+  item,
+  uid,
+  className,
+  title,
+  tight = true,
+}: {
+  item: ItemId;
+  uid: string;
+  className?: string;
+  title?: string;
+  tight?: boolean;
+}) {
   const filter = `${uid}-wobble`;
   const parts = ITEM_ART[item]({ pose: "stand" }).sort((a, b) => a.z - b.z);
-  const [x, y, w, h] = ITEM_BOX[item];
+  const [x, y, w, h] = (tight && ICON_BOX[item]) || ITEM_BOX[item];
   return (
     <svg
       viewBox={`${x} ${y} ${w} ${h}`}

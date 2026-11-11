@@ -41,7 +41,12 @@ function shivering(): Part[] {
       line("M266 192 L284 186", stroke.fine),
       line("M318 184 L336 190", stroke.fine),
       // Chattering teeth.
-      { d: "M266 290 C290 284 316 284 340 290 L338 310 C314 316 290 316 268 310Z", fill: art.white, stroke: ink, width: stroke.fine },
+      {
+        d: "M266 290 C290 284 316 284 340 290 L338 310 C314 316 290 316 268 310Z",
+        fill: art.white,
+        stroke: ink,
+        width: stroke.fine,
+      },
       line("M280 288 L280 312", stroke.fine),
       line("M294 286 L294 314", stroke.fine),
       line("M308 286 L308 314", stroke.fine),
@@ -50,7 +55,12 @@ function shivering(): Part[] {
     {
       id: "fx-shiver",
       z: Z.fx,
-      shapes: [area("M186 300 C176 290 160 292 158 304 C146 302 138 314 146 322 C142 334 158 340 168 332 C176 340 190 334 188 322 C198 318 196 302 186 300Z", art.white)],
+      shapes: [
+        area(
+          "M186 300 C176 290 160 292 158 304 C146 302 138 314 146 322 C142 334 158 340 168 332 C176 340 190 334 188 322 C198 318 196 302 186 300Z",
+          art.white,
+        ),
+      ],
       details: [
         line("M158 170 C150 184 150 200 158 214", stroke.detail),
         line("M138 160 C126 182 126 206 138 226", stroke.detail),
@@ -75,7 +85,11 @@ function soggy(): Part[] {
     {
       id: "fx-soggy",
       z: Z.fx,
-      shapes: [area(drop(218, 140), art.rain), area(drop(392, 150, 0.8), art.rain), area(drop(240, 330, 0.7), art.rain)],
+      shapes: [
+        area(drop(218, 140), art.rain),
+        area(drop(392, 150, 0.8), art.rain),
+        area(drop(240, 330, 0.7), art.rain),
+      ],
     },
   ];
 }
@@ -87,13 +101,25 @@ function sweaty(): Part[] {
       line("M268 218 C272 206 282 206 286 218"),
       line("M314 215 C318 203 328 203 332 215"),
       // Open mouth with tongue.
-      { d: "M276 296 C286 292 318 292 328 296 C328 316 312 326 302 326 C290 326 276 316 276 296Z", fill: ink, stroke: "none" },
-      { d: "M288 316 C292 306 310 306 314 316 C308 324 294 324 288 316Z", fill: art.pink, stroke: "none" },
+      {
+        d: "M276 296 C286 292 318 292 328 296 C328 316 312 326 302 326 C290 326 276 316 276 296Z",
+        fill: ink,
+        stroke: "none",
+      },
+      {
+        d: "M288 316 C292 306 310 306 314 316 C308 324 294 324 288 316Z",
+        fill: art.pink,
+        stroke: "none",
+      },
     ]),
     {
       id: "fx-sweaty",
       z: Z.fx,
-      shapes: [area(drop(206, 168), art.sky), area(drop(404, 186, 0.85), art.sky), area(drop(186, 216, 0.6), art.sky)],
+      shapes: [
+        area(drop(206, 168), art.sky),
+        area(drop(404, 186, 0.85), art.sky),
+        area(drop(186, 216, 0.6), art.sky),
+      ],
     },
   ];
 }
@@ -132,7 +158,10 @@ function thinking(): Part[] {
       shapes: [
         area(ellipse(432, 116, 9, 9), art.white),
         area(ellipse(456, 86, 14, 13), art.white),
-        area("M470 66 C460 40 488 18 512 30 C524 8 562 12 566 38 C592 40 598 74 578 86 C584 110 552 122 536 108 C522 124 488 118 488 98 C462 98 456 76 470 66Z", art.white),
+        area(
+          "M470 66 C460 40 488 18 512 30 C524 8 562 12 566 38 C592 40 598 74 578 86 C584 110 552 122 536 108 C522 124 488 118 488 98 C462 98 456 76 470 66Z",
+          art.white,
+        ),
       ],
       details: [line("M494 72 C504 54 512 88 522 64 C530 46 540 90 552 62", stroke.fine)],
     },

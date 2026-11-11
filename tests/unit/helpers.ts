@@ -5,7 +5,11 @@ import { buildDaySummary } from "@/lib/weather";
 export function summaryFor(id: string, choice: "today" | "tomorrow" = "today"): DaySummary {
   const spec = scenarioById(id);
   if (!spec) throw new Error(`unknown scenario ${id}`);
-  const s = buildDaySummary(scenarioForecast(spec), { choice, placeLabel: spec.place, nowMs: FIXTURE_NOW_MS });
+  const s = buildDaySummary(scenarioForecast(spec), {
+    choice,
+    placeLabel: spec.place,
+    nowMs: FIXTURE_NOW_MS,
+  });
   if (!s) throw new Error("no summary");
   return s;
 }

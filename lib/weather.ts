@@ -108,14 +108,21 @@ export async function searchPlaces(query: string, signal?: AbortSignal): Promise
   return data.data.results ?? [];
 }
 
-export async function fetchForecast(lat: number, lon: number, signal?: AbortSignal): Promise<Forecast> {
+export async function fetchForecast(
+  lat: number,
+  lon: number,
+  signal?: AbortSignal,
+): Promise<Forecast> {
   const parsed = ForecastSchema.safeParse(await getJson(forecastUrl(lat, lon), signal));
   if (!parsed.success) throw new WeatherError("failed", "Unexpected forecast response");
   return parsed.data;
 }
 
 /** The location's local wall-clock time, from Open-Meteo's UTC offset. */
-export function localNow(utcOffsetSeconds: number, nowMs: number = Date.now()): { dateISO: string; hour: number } {
+export function localNow(
+  utcOffsetSeconds: number,
+  nowMs: number = Date.now(),
+): { dateISO: string; hour: number } {
   const d = new Date(nowMs + utcOffsetSeconds * 1000);
   return { dateISO: d.toISOString().slice(0, 10), hour: d.getUTCHours() };
 }
@@ -138,7 +145,8 @@ export function windowStart(choice: DayChoice, hour: number): number {
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const clean = (v: number | null | undefined, fallback = 0) => (typeof v === "number" && Number.isFinite(v) ? v : fallback);
+const clean = (v: number | null | undefined, fallback = 0) =>
+  typeof v === "number" && Number.isFinite(v) ? v : fallback;
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
@@ -174,12 +182,16 @@ export function buildDaySummary(fc: Forecast, opts: BuildOptions): DaySummary | 
   const H = fc.hourly;
   const points: HourPoint[] = [];
   for (let h = start; h <= WINDOW_END_HOUR; h += STEP_HOURS) {
-    const ids = [at(h), h + 1 <= WINDOW_END_HOUR ? at(h + 1) : undefined].filter((v): v is number => v !== undefined);
+    const ids = [at(h), h + 1 <= WINDOW_END_HOUR ? at(h + 1) : undefined].filter(
+      (v): v is number => v !== undefined,
+    );
     if (ids.length === 0) continue;
     const first = ids[0];
     points.push({
       time: `${pad(h)}:00`,
-      feelsLikeC: roundHalf(avg(ids.map((i) => clean(H.apparent_temperature[i], clean(H.temperature_2m[i]))))),
+      feelsLikeC: roundHalf(
+        avg(ids.map((i) => clean(H.apparent_temperature[i], clean(H.temperature_2m[i])))),
+      ),
       tempC: roundHalf(avg(ids.map((i) => clean(H.temperature_2m[i])))),
       rainProb: Math.round(Math.max(...ids.map((i) => clean(H.precipitation_probability[i])))),
       rainMm: round1(ids.reduce((a, i) => a + clean(H.precipitation[i]), 0)),
@@ -191,7 +203,8 @@ export function buildDaySummary(fc: Forecast, opts: BuildOptions): DaySummary | 
   }
 
   const dayIdx = fc.daily.time.indexOf(dateISO);
-  const hhmm = (s: string | null | undefined, fallback: string) => (s && /T\d{2}:\d{2}/.test(s) ? s.slice(11, 16) : fallback);
+  const hhmm = (s: string | null | undefined, fallback: string) =>
+    s && /T\d{2}:\d{2}/.test(s) ? s.slice(11, 16) : fallback;
   const feels = points.map((p) => p.feelsLikeC);
 
   return {

@@ -22,12 +22,17 @@ describe("units", () => {
     expect(defaultUnitsForLocale("it-IT")).toBe("C");
     expect(defaultUnitsForLocale("en")).toBe("C");
     expect(defaultUnitsForLocale(undefined)).toBe("C");
+    expect(defaultUnitsForLocale("en-US", "Europe/Rome")).toBe("C");
+    expect(defaultUnitsForLocale("en-US", "America/Chicago")).toBe("F");
   });
 });
 
 describe("outfit state", () => {
   test("add swaps within a slot, remove empties it", () => {
-    const s = applyChange({ outer: "puffer", top: "sweater" }, { action: "add", item: "lightjacket" });
+    const s = applyChange(
+      { outer: "puffer", top: "sweater" },
+      { action: "add", item: "lightjacket" },
+    );
     expect(s.outer).toBe("lightjacket");
     expect(applyChange(s, { action: "remove", item: "lightjacket" }).outer).toBeUndefined();
     expect(applyChange(s, { action: "remove", item: "puffer" })).toEqual(s);
@@ -39,10 +44,15 @@ describe("outfit state", () => {
     expect(outfitAt(base, [...changes], "13:00").carry).toBe("umbrella");
   });
   test("changedSlots lists differences", () => {
-    expect(changedSlots({ top: "sweater" }, { top: "tshirt", carry: "umbrella" }).sort()).toEqual(["carry", "top"]);
+    expect(changedSlots({ top: "sweater" }, { top: "tshirt", carry: "umbrella" }).sort()).toEqual([
+      "carry",
+      "top",
+    ]);
   });
   test("describeOutfit reads naturally", () => {
-    expect(describeOutfit({ top: "tshirt", bottom: "shorts", footwear: "sandals" })).toBe("T-shirt, shorts and sandals");
+    expect(describeOutfit({ top: "tshirt", bottom: "shorts", footwear: "sandals" })).toBe(
+      "T-shirt, shorts and sandals",
+    );
     expect(describeOutfit({})).toBe("nothing at all");
   });
 });
@@ -82,8 +92,12 @@ describe("cache", () => {
   });
   test("key ignores display units but not the profile", () => {
     const s = summaryFor("cool-rain");
-    expect(outfitCacheKey(s, profile({ units: "C" }))).toBe(outfitCacheKey(s, profile({ units: "F" })));
-    expect(outfitCacheKey(s, profile())).not.toBe(outfitCacheKey(s, profile({ sensitivity: "cold" })));
+    expect(outfitCacheKey(s, profile({ units: "C" }))).toBe(
+      outfitCacheKey(s, profile({ units: "F" })),
+    );
+    expect(outfitCacheKey(s, profile())).not.toBe(
+      outfitCacheKey(s, profile({ sensitivity: "cold" })),
+    );
   });
 });
 

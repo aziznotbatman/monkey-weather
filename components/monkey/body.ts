@@ -1,5 +1,15 @@
 import { art, stroke } from "@/lib/tokens";
-import { ARM_L, ARM_R, ARM_R_WAVE, LEG_L, LEG_R, LIMB, limbPath, pointAt, type Limb } from "./anchors";
+import {
+  ARM_L,
+  ARM_R,
+  ARM_R_WAVE,
+  LEG_L,
+  LEG_R,
+  LIMB,
+  limbPath,
+  pointAt,
+  type Limb,
+} from "./anchors";
 import { area, ellipse, line, tube, type Part } from "./parts";
 
 export type Pose = "stand" | "wave";
@@ -43,8 +53,7 @@ const FACE_MASK =
 const TORSO =
   "M270 336 C268 352 261 362 246 372 C222 386 213 412 211 452 C207 500 206 542 214 574 C242 592 360 593 388 573 C395 540 393 500 389 452 C387 410 378 386 354 372 C339 362 332 352 330 336Z";
 
-const TAIL =
-  "M228 560 C170 600 104 574 96 512 C90 462 136 436 164 458 C186 476 168 506 144 494";
+const TAIL = "M228 560 C170 600 104 574 96 512 C90 462 136 436 164 458 C186 476 168 506 144 494";
 
 function earPath(cx: number, cy: number, r: number, flip = 1): string {
   // Slightly lopsided circle, flatter on the head side.
@@ -77,8 +86,14 @@ export function bodyParts(pose: Pose): Part[] {
       id: "body-feet",
       z: Z.feet,
       shapes: [
-        area("M214 736 C214 716 236 708 256 710 C280 712 292 724 290 738 C288 752 262 756 244 754 C226 752 214 748 214 736Z", art.tan),
-        area("M312 738 C310 724 322 712 346 710 C366 708 388 716 388 736 C388 748 376 752 358 754 C340 756 314 752 312 738Z", art.tan),
+        area(
+          "M214 736 C214 716 236 708 256 710 C280 712 292 724 290 738 C288 752 262 756 244 754 C226 752 214 748 214 736Z",
+          art.tan,
+        ),
+        area(
+          "M312 738 C310 724 322 712 346 710 C366 708 388 716 388 736 C388 748 376 752 358 754 C340 756 314 752 312 738Z",
+          art.tan,
+        ),
       ],
       details: [
         line("M236 742 L238 752", stroke.fine),
@@ -93,7 +108,12 @@ export function bodyParts(pose: Pose): Part[] {
       shapes: [area(TORSO, art.fur)],
       details: [
         // Tan belly patch, drawn as a soft shape without outline.
-        { d: "M262 430 C262 404 338 404 338 430 C342 478 334 534 300 540 C266 534 258 478 262 430Z", fill: art.tanDark, stroke: "none", opacity: 0.55 },
+        {
+          d: "M262 430 C262 404 338 404 338 430 C342 478 334 534 300 540 C266 534 258 478 262 430Z",
+          fill: art.tanDark,
+          stroke: "none",
+          opacity: 0.55,
+        },
         line("M296 470 C300 474 304 474 306 470", stroke.fine),
       ],
     },
@@ -111,7 +131,11 @@ export function bodyParts(pose: Pose): Part[] {
       ],
       details:
         pose === "wave"
-          ? [line(`M${handR[0] - 8} ${handR[1] - 28} l-4 -12`, stroke.fine), line(`M${handR[0] + 4} ${handR[1] - 32} l0 -12`, stroke.fine), line(`M${handR[0] + 15} ${handR[1] - 28} l5 -11`, stroke.fine)]
+          ? [
+              line(`M${handR[0] - 8} ${handR[1] - 28} l-4 -12`, stroke.fine),
+              line(`M${handR[0] + 4} ${handR[1] - 32} l0 -12`, stroke.fine),
+              line(`M${handR[0] + 15} ${handR[1] - 28} l5 -11`, stroke.fine),
+            ]
           : [],
     },
     {

@@ -115,12 +115,6 @@ a {
   animation: mw-bob 3.6s ease-in-out infinite;
 }
 
-.mw-animated [id^="expr-"] {
-  transform-box: view-box;
-  transform-origin: 300px 214px;
-  animation: mw-blink 5.5s infinite;
-}
-
 .mw-pop {
   transform-box: fill-box;
   transform-origin: center;

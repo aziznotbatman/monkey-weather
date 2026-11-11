@@ -8,7 +8,16 @@ import { findClash, ITEM_SLOT, REQUIRED_SLOTS } from "@/lib/wardrobe";
 import { profile, summaryFor } from "./helpers";
 
 const point = (p: Partial<HourPoint>): HourPoint => ({
-  time: "09:00", feelsLikeC: 15, tempC: 15, rainProb: 0, rainMm: 0, windKmh: 5, uv: 1, weatherCode: 0, isDay: true, ...p,
+  time: "09:00",
+  feelsLikeC: 15,
+  tempC: 15,
+  rainProb: 0,
+  rainMm: 0,
+  windKmh: 5,
+  uv: 1,
+  weatherCode: 0,
+  isDay: true,
+  ...p,
 });
 const day = { heavyRain: false };
 
@@ -28,8 +37,29 @@ describe("targetAt thresholds", () => {
     [22, { top: "tshirt", bottom: "trousers", footwear: "sneakers" }],
     [17, { top: "longsleeve", outer: "lightjacket", bottom: "trousers", footwear: "sneakers" }],
     [11, { top: "hoodie", outer: "lightjacket", bottom: "trousers", footwear: "sneakers" }],
-    [5, { top: "sweater", outer: "puffer", bottom: "trousers", footwear: "boots", head: "beanie", neck: "scarf" }],
-    [0, { top: "sweater", outer: "puffer", bottom: "trousers", footwear: "boots", head: "beanie", neck: "scarf", hands: "gloves" }],
+    [
+      5,
+      {
+        top: "sweater",
+        outer: "puffer",
+        bottom: "trousers",
+        footwear: "boots",
+        head: "beanie",
+        neck: "scarf",
+      },
+    ],
+    [
+      0,
+      {
+        top: "sweater",
+        outer: "puffer",
+        bottom: "trousers",
+        footwear: "boots",
+        head: "beanie",
+        neck: "scarf",
+        hands: "gloves",
+      },
+    ],
   ])("feels %i°C", (feels, expected) => {
     expect(targetAt(point({ feelsLikeC: feels }), profile(), day)).toEqual(expected);
   });
@@ -45,7 +75,9 @@ describe("targetAt thresholds", () => {
   });
 
   test("transit prefers a lighter top under the jacket", () => {
-    expect(targetAt(point({ feelsLikeC: 11 }), profile({ getAround: "transit" }), day).top).toBe("longsleeve");
+    expect(targetAt(point({ feelsLikeC: 11 }), profile({ getAround: "transit" }), day).top).toBe(
+      "longsleeve",
+    );
   });
 
   test("rain: umbrella when calm, raincoat when windy or cycling", () => {
@@ -57,7 +89,9 @@ describe("targetAt thresholds", () => {
   });
 
   test("heavy rain day adds rain boots", () => {
-    expect(targetAt(point({ rainProb: 80 }), profile(), { heavyRain: true }).footwear).toBe("rainboots");
+    expect(targetAt(point({ rainProb: 80 }), profile(), { heavyRain: true }).footwear).toBe(
+      "rainboots",
+    );
   });
 
   test("freezing + windy rain keeps the puffer (no raincoat over a puffer)", () => {
@@ -69,7 +103,9 @@ describe("targetAt thresholds", () => {
     const s = targetAt(point({ feelsLikeC: 24, uv: 7 }), profile(), day);
     expect(s.eyes).toBe("sunglasses");
     expect(s.head).toBe("cap");
-    expect(targetAt(point({ feelsLikeC: 24, uv: 7, isDay: false }), profile(), day).eyes).toBeUndefined();
+    expect(
+      targetAt(point({ feelsLikeC: 24, uv: 7, isDay: false }), profile(), day).eyes,
+    ).toBeUndefined();
   });
 
   test("snow wants boots, not an umbrella", () => {
@@ -79,7 +115,9 @@ describe("targetAt thresholds", () => {
   });
 
   test("cold-sensitive person gets a warmer outfit for the same weather", () => {
-    expect(targetAt(point({ feelsLikeC: 16 }), profile({ sensitivity: "cold" }), day).top).toBe("hoodie");
+    expect(targetAt(point({ feelsLikeC: 16 }), profile({ sensitivity: "cold" }), day).top).toBe(
+      "hoodie",
+    );
   });
 });
 
@@ -100,15 +138,21 @@ describe("ruleEngine across fixtures", () => {
   });
 
   test("the seven scenarios produce seven different day plans", () => {
-    const keys = new Set(plans.map(([, p]) => JSON.stringify([p.base, p.changes.map((c) => c.action + c.item)])));
+    const keys = new Set(
+      plans.map(([, p]) => JSON.stringify([p.base, p.changes.map((c) => c.action + c.item)])),
+    );
     expect(keys.size).toBe(7);
   });
 
   test("big swing day: lighter outer late morning, umbrella at 17:00", () => {
     const plan = ruleEngine(summaryFor("big-swing"), profile());
     expect(plan.base.outer).toBe("puffer");
-    expect(plan.changes).toContainEqual(expect.objectContaining({ action: "add", item: "lightjacket", time: "11:00" }));
-    expect(plan.changes).toContainEqual(expect.objectContaining({ action: "add", item: "umbrella", time: "17:00" }));
+    expect(plan.changes).toContainEqual(
+      expect.objectContaining({ action: "add", item: "lightjacket", time: "11:00" }),
+    );
+    expect(plan.changes).toContainEqual(
+      expect.objectContaining({ action: "add", item: "umbrella", time: "17:00" }),
+    );
     expect(outfitAt(plan.base, plan.changes, "13:00").outer).toBe("lightjacket");
     expect(plan.headline).toContain("umbrella at 17:00");
   });
@@ -146,6 +190,8 @@ describe("mood and lines", () => {
   });
 
   test("same day, same line (deterministic)", () => {
-    expect(ruleEngine(summaryFor("cold-dry"), profile())).toEqual(ruleEngine(summaryFor("cold-dry"), profile()));
+    expect(ruleEngine(summaryFor("cold-dry"), profile())).toEqual(
+      ruleEngine(summaryFor("cold-dry"), profile()),
+    );
   });
 });

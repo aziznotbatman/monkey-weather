@@ -2,9 +2,26 @@ import { z } from "zod";
 import { applyChange, toMinutes } from "./outfitState";
 import { moodFor, resolveClashes, ruleEngine } from "./ruleEngine";
 import type { Change, DaySummary, OutfitPlan, Profile } from "./schema";
-import { findClash, ITEM_IDS, ITEM_SLOT, MOODS, REQUIRED_SLOTS, SLOTS, type ItemId, type Mood, type OutfitState, type Slot } from "./wardrobe";
+import {
+  findClash,
+  ITEM_IDS,
+  ITEM_SLOT,
+  MOODS,
+  REQUIRED_SLOTS,
+  SLOTS,
+  type ItemId,
+  type Mood,
+  type OutfitState,
+  type Slot,
+} from "./wardrobe";
 
-export const LIMITS = { headline: 60, monkeyLine: 120, reason: 60, changes: 4, maxRepairs: 6 } as const;
+export const LIMITS = {
+  headline: 60,
+  monkeyLine: 120,
+  reason: 60,
+  changes: 4,
+  maxRepairs: 6,
+} as const;
 
 const LooseSchema = z.object({
   headline: z.unknown(),
@@ -14,7 +31,8 @@ const LooseSchema = z.object({
   changes: z.array(z.unknown()).optional(),
 });
 
-const isItem = (v: unknown): v is ItemId => typeof v === "string" && (ITEM_IDS as string[]).includes(v);
+const isItem = (v: unknown): v is ItemId =>
+  typeof v === "string" && (ITEM_IDS as string[]).includes(v);
 const isSlot = (v: string): v is Slot => (SLOTS as readonly string[]).includes(v);
 
 /** Strip control characters, emoji and markup-ish characters; collapse whitespace. */
@@ -41,7 +59,11 @@ export interface ValidationResult {
   repairs: string[];
 }
 
-function repairBase(raw: Record<string, unknown>, fallback: OutfitState, repairs: string[]): OutfitState | null {
+function repairBase(
+  raw: Record<string, unknown>,
+  fallback: OutfitState,
+  repairs: string[],
+): OutfitState | null {
   let base: OutfitState = {};
   for (const [key, value] of Object.entries(raw)) {
     if (value === null || value === undefined) continue;
@@ -69,14 +91,32 @@ function repairBase(raw: Record<string, unknown>, fallback: OutfitState, repairs
   return base;
 }
 
-function repairChanges(raw: unknown[], base: OutfitState, summary: DaySummary, repairs: string[]): Change[] {
+function repairChanges(
+  raw: unknown[],
+  base: OutfitState,
+  summary: DaySummary,
+  repairs: string[],
+): Change[] {
   const start = toMinutes(summary.hours[0].time);
   const end = toMinutes(summary.hours[summary.hours.length - 1].time) + 59;
   const parsed = raw
-    .map((c) => z.object({ time: z.string(), action: z.enum(["add", "remove"]), item: z.string(), reason: z.unknown() }).safeParse(c))
+    .map((c) =>
+      z
+        .object({
+          time: z.string(),
+          action: z.enum(["add", "remove"]),
+          item: z.string(),
+          reason: z.unknown(),
+        })
+        .safeParse(c),
+    )
     .flatMap((r) => (r.success ? [r.data] : (repairs.push("dropped malformed change"), [])))
     .filter((c) => {
-      const ok = /^([01]\d|2[0-3]):[0-5]\d$/.test(c.time) && isItem(c.item) && toMinutes(c.time) > start && toMinutes(c.time) <= end;
+      const ok =
+        /^([01]\d|2[0-3]):[0-5]\d$/.test(c.time) &&
+        isItem(c.item) &&
+        toMinutes(c.time) > start &&
+        toMinutes(c.time) <= end;
       if (!ok) repairs.push(`dropped change ${c.item}@${c.time}`);
       return ok;
     })
@@ -109,7 +149,12 @@ function repairChanges(raw: unknown[], base: OutfitState, summary: DaySummary, r
     }
     seen.add(key);
     state = next;
-    out.push({ time: c.time, action: c.action, item, reason: capText(cleanText(c.reason) || "the weather shifts", LIMITS.reason) });
+    out.push({
+      time: c.time,
+      action: c.action,
+      item,
+      reason: capText(cleanText(c.reason) || "the weather shifts", LIMITS.reason),
+    });
   }
   return out;
 }
@@ -118,7 +163,11 @@ function repairChanges(raw: unknown[], base: OutfitState, summary: DaySummary, r
  * Validate an outfit (from the AI or anywhere else) against the wardrobe rules and
  * repair what can be repaired. Returns null when it is too broken to trust.
  */
-export function validateOutfit(raw: unknown, summary: DaySummary, profile: Profile): ValidationResult | null {
+export function validateOutfit(
+  raw: unknown,
+  summary: DaySummary,
+  profile: Profile,
+): ValidationResult | null {
   const loose = LooseSchema.safeParse(raw);
   if (!loose.success) return null;
   const repairs: string[] = [];
@@ -131,7 +180,8 @@ export function validateOutfit(raw: unknown, summary: DaySummary, profile: Profi
 
   const moodRaw = loose.data.mood;
   let mood: Mood;
-  if (typeof moodRaw === "string" && (MOODS as readonly string[]).includes(moodRaw)) mood = moodRaw as Mood;
+  if (typeof moodRaw === "string" && (MOODS as readonly string[]).includes(moodRaw))
+    mood = moodRaw as Mood;
   else {
     mood = moodFor(summary.hours[0], profile);
     repairs.push("set mood");

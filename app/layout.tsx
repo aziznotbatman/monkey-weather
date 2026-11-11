@@ -43,7 +43,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`} style={cssVariables() as CSSProperties}>
+    <html
+      lang="en"
+      className={`${display.variable} ${sans.variable}`}
+      style={cssVariables() as CSSProperties}
+    >
       <body>{children}</body>
     </html>
   );

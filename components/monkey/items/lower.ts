@@ -12,7 +12,11 @@ export const shorts: ItemArt = () => [
     id: "item-shorts",
     slot: "bottom",
     z: Z.bottom,
-    shapes: [area(WAIST, art.khaki), tube(limbPath(LEG_L, 0, 0.36), art.khaki, 66), tube(limbPath(LEG_R, 0, 0.36), art.khaki, 66)],
+    shapes: [
+      area(WAIST, art.khaki),
+      tube(limbPath(LEG_L, 0, 0.36), art.khaki, 66),
+      tube(limbPath(LEG_R, 0, 0.36), art.khaki, 66),
+    ],
     details: [
       line("M300 556 L300 610", stroke.fine),
       line("M226 560 C236 572 246 576 258 576", stroke.fine),
@@ -28,7 +32,11 @@ export const trousers: ItemArt = () => [
     id: "item-trousers",
     slot: "bottom",
     z: Z.bottom,
-    shapes: [area(WAIST, art.navy), tube(limbPath(LEG_L, 0, 0.97), art.navy, 60), tube(limbPath(LEG_R, 0, 0.97), art.navy, 60)],
+    shapes: [
+      area(WAIST, art.navy),
+      tube(limbPath(LEG_L, 0, 0.97), art.navy, 60),
+      tube(limbPath(LEG_R, 0, 0.97), art.navy, 60),
+    ],
     details: [
       line("M300 556 L300 612", stroke.fine, "#6C7AB0"),
       line("M226 560 C236 572 246 576 258 576", stroke.fine, "#6C7AB0"),
@@ -95,8 +103,7 @@ export const rainboots: ItemArt = () => [
   },
 ];
 
-const SANDAL_SOLE =
-  "M208 750 C228 760 278 760 294 748 L296 756 C280 770 226 770 208 760Z";
+const SANDAL_SOLE = "M208 750 C228 760 278 760 294 748 L296 756 C280 770 226 770 208 760Z";
 
 export const sandals: ItemArt = () => [
   {

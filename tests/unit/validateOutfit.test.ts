@@ -7,7 +7,17 @@ const good = {
   headline: "Puffer now, umbrella at 17:00.",
   monkeyLine: "Layers in the morning, lighter by lunch.",
   mood: "shivering",
-  base: { head: "beanie", eyes: null, neck: "scarf", top: "sweater", outer: "puffer", bottom: "trousers", footwear: "boots", hands: null, carry: null },
+  base: {
+    head: "beanie",
+    eyes: null,
+    neck: "scarf",
+    top: "sweater",
+    outer: "puffer",
+    bottom: "trousers",
+    footwear: "boots",
+    hands: null,
+    carry: null,
+  },
   changes: [
     { time: "11:00", action: "add", item: "lightjacket", reason: "warming up to 14°" },
     { time: "17:00", action: "add", item: "umbrella", reason: "rain from 17:00" },
@@ -18,7 +28,14 @@ describe("validateOutfit", () => {
   test("accepts a correct AI answer unchanged", () => {
     const r = validateOutfit(good, summary, profile());
     expect(r?.repairs).toEqual([]);
-    expect(r?.plan.base).toEqual({ head: "beanie", neck: "scarf", top: "sweater", outer: "puffer", bottom: "trousers", footwear: "boots" });
+    expect(r?.plan.base).toEqual({
+      head: "beanie",
+      neck: "scarf",
+      top: "sweater",
+      outer: "puffer",
+      bottom: "trousers",
+      footwear: "boots",
+    });
     expect(r?.plan.changes).toHaveLength(2);
   });
 
@@ -39,13 +56,21 @@ describe("validateOutfit", () => {
   });
 
   test("drops unknown ids and moves misplaced items", () => {
-    const r = validateOutfit({ ...good, base: { ...good.base, head: "tiara", neck: null, carry: "scarf" } }, summary, profile());
+    const r = validateOutfit(
+      { ...good, base: { ...good.base, head: "tiara", neck: null, carry: "scarf" } },
+      summary,
+      profile(),
+    );
     expect(r?.plan.base.head).toBeUndefined();
     expect(r?.plan.base.neck).toBe("scarf");
   });
 
   test("resolves impossible combos in the base", () => {
-    const r = validateOutfit({ ...good, base: { ...good.base, bottom: "shorts" } }, summary, profile());
+    const r = validateOutfit(
+      { ...good, base: { ...good.base, bottom: "shorts" } },
+      summary,
+      profile(),
+    );
     expect(r?.plan.base.bottom).toBe("trousers");
   });
 
@@ -65,7 +90,9 @@ describe("validateOutfit", () => {
       summary,
       profile(),
     );
-    expect(r?.plan.changes).toEqual([{ time: "17:00", action: "add", item: "umbrella", reason: "rain" }]);
+    expect(r?.plan.changes).toEqual([
+      { time: "17:00", action: "add", item: "umbrella", reason: "rain" },
+    ]);
   });
 
   test("caps changes at four", () => {
@@ -80,7 +107,11 @@ describe("validateOutfit", () => {
   });
 
   test("normalises minutes to the hour and sorts", () => {
-    const r = validateOutfit({ ...good, changes: [good.changes[1], { ...good.changes[0], time: "11:30" }] }, summary, profile());
+    const r = validateOutfit(
+      { ...good, changes: [good.changes[1], { ...good.changes[0], time: "11:30" }] },
+      summary,
+      profile(),
+    );
     expect(r?.plan.changes.map((c) => c.time)).toEqual(["11:00", "17:00"]);
   });
 
@@ -97,7 +128,12 @@ describe("validateOutfit", () => {
   });
 
   test("rejects when too many repairs are needed", () => {
-    const changes = Array.from({ length: 8 }, () => ({ time: "03:00", action: "add", item: "cap", reason: "x" }));
+    const changes = Array.from({ length: 8 }, () => ({
+      time: "03:00",
+      action: "add",
+      item: "cap",
+      reason: "x",
+    }));
     expect(validateOutfit({ ...good, changes }, summary, profile())).toBeNull();
   });
 });

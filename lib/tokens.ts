@@ -98,7 +98,11 @@ export const type = {
   hero: "clamp(2.4rem, 1.8rem + 3.2vw, 3.6rem)",
 } as const;
 
-export const motion = { fast: "140ms", normal: "260ms", pop: "cubic-bezier(.34,1.56,.64,1)" } as const;
+export const motion = {
+  fast: "140ms",
+  normal: "260ms",
+  pop: "cubic-bezier(.34,1.56,.64,1)",
+} as const;
 
 /** Flatten the UI tokens into CSS custom properties. */
 export function cssVariables(): Record<string, string> {

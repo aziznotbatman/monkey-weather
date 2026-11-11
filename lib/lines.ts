@@ -2,11 +2,31 @@ import type { Mood } from "./wardrobe";
 
 /** Headlines for days with no changes (<= 60 chars). */
 export const STEADY_HEADLINES: Record<Mood, string[]> = {
-  happy: ["One outfit, all day. Lovely.", "Easy day. Dress once, forget it.", "No costume changes today."],
-  shivering: ["Wrap up. It stays cold all day.", "Full winter kit. All day long.", "Layers on, and keep them on."],
-  soggy: ["Wet all day. Dress for puddles.", "Rain gear on. It's not leaving.", "It's a soggy one. Gear up."],
-  sweaty: ["Hot all day. Wear as little as allowed.", "Sun's in charge today. Go light.", "Light clothes, shade, water."],
-  windblown: ["Windy all day. Hold on to your hat.", "Blustery. Zip everything up.", "The wind has opinions today."],
+  happy: [
+    "One outfit, all day. Lovely.",
+    "Easy day. Dress once, forget it.",
+    "No costume changes today.",
+  ],
+  shivering: [
+    "Wrap up. It stays cold all day.",
+    "Full winter kit. All day long.",
+    "Layers on, and keep them on.",
+  ],
+  soggy: [
+    "Wet all day. Dress for puddles.",
+    "Rain gear on. It's not leaving.",
+    "It's a soggy one. Gear up.",
+  ],
+  sweaty: [
+    "Hot all day. Wear as little as allowed.",
+    "Sun's in charge today. Go light.",
+    "Light clothes, shade, water.",
+  ],
+  windblown: [
+    "Windy all day. Hold on to your hat.",
+    "Blustery. Zip everything up.",
+    "The wind has opinions today.",
+  ],
 };
 
 /** The monkey's one-liners (<= 120 chars). At least 25, chosen by mood and the date. */

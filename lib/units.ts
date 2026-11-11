@@ -19,8 +19,14 @@ export function roundHalf(n: number): number {
 /** Countries that use Fahrenheit day to day. */
 const FAHRENHEIT_REGIONS = new Set(["US", "LR", "MM", "BS", "BZ", "KY", "PW", "FM", "MH"]);
 
-export function defaultUnitsForLocale(locale: string | undefined): Units {
+/**
+ * °F only when the locale's region uses Fahrenheit AND the device clock is set to a matching
+ * timezone (many Europeans run browsers in en-US). Everyone else gets °C.
+ */
+export function defaultUnitsForLocale(locale: string | undefined, timeZone?: string): Units {
   if (!locale) return "C";
   const region = locale.split(/[-_]/)[1]?.toUpperCase();
-  return region && FAHRENHEIT_REGIONS.has(region) ? "F" : "C";
+  if (!region || !FAHRENHEIT_REGIONS.has(region)) return "C";
+  if (timeZone && !/^(America|Pacific|US)\//.test(timeZone)) return "C";
+  return "F";
 }

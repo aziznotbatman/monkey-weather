@@ -11,10 +11,26 @@ export interface EffectsProps {
 const CLOUD =
   "M0 30 C-4 8 22 -6 40 6 C52 -14 90 -12 96 12 C120 10 130 36 112 48 C112 62 90 68 78 60 C66 72 30 72 22 58 C2 62 -10 44 0 30Z";
 
-function Cloud({ x, y, s = 1, fill = art.white }: { x: number; y: number; s?: number; fill?: string }) {
+function Cloud({
+  x,
+  y,
+  s = 1,
+  fill = art.white,
+}: {
+  x: number;
+  y: number;
+  s?: number;
+  fill?: string;
+}) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <path d={CLOUD} fill={fill} stroke={ink} strokeWidth={stroke.line / s} strokeLinejoin="round" />
+      <path
+        d={CLOUD}
+        fill={fill}
+        stroke={ink}
+        strokeWidth={stroke.line / s}
+        strokeLinejoin="round"
+      />
     </g>
   );
 }
@@ -47,7 +63,14 @@ function scatter(n: number, seed: number, w = 600, h = 800): Array<[number, numb
 const RAIN = scatter(26, 7);
 const SNOW = scatter(34, 3);
 const STARS = scatter(14, 5, 600, 360);
-const EDGE: Array<[number, number]> = [[40, 560], [70, 690], [548, 610], [520, 730], [30, 380], [570, 420]];
+const EDGE: Array<[number, number]> = [
+  [40, 560],
+  [70, 690],
+  [548, 610],
+  [520, 730],
+  [30, 380],
+  [570, 420],
+];
 
 export function Effects({ sky, windy, filter, layer }: EffectsProps) {
   const f = `url(#${filter})`;
@@ -75,11 +98,23 @@ export function Effects({ sky, windy, filter, layer }: EffectsProps) {
           </>
         )}
         {sky === "storm" && (
-          <path d="M120 150 L96 210 L122 206 L104 262 L156 190 L128 194 L146 150Z" fill={art.yellow} stroke={ink} strokeWidth={stroke.fine} strokeLinejoin="round" />
+          <path
+            d="M120 150 L96 210 L122 206 L104 262 L156 190 L128 194 L146 150Z"
+            fill={art.yellow}
+            stroke={ink}
+            strokeWidth={stroke.fine}
+            strokeLinejoin="round"
+          />
         )}
         {sky === "night" && (
           <>
-            <path d="M120 70 C80 80 70 140 108 162 C140 180 176 160 182 140 C150 150 116 130 120 70Z" fill={art.cream} stroke={ink} strokeWidth={stroke.line} strokeLinejoin="round" />
+            <path
+              d="M120 70 C80 80 70 140 108 162 C140 180 176 160 182 140 C150 150 116 130 120 70Z"
+              fill={art.cream}
+              stroke={ink}
+              strokeWidth={stroke.line}
+              strokeLinejoin="round"
+            />
             {STARS.map(([x, y], i) => (
               <circle key={i} cx={x} cy={y} r={i % 3 === 0 ? 5 : 3.5} fill={art.cream} />
             ))}
@@ -88,19 +123,33 @@ export function Effects({ sky, windy, filter, layer }: EffectsProps) {
         {(sky === "rain" || sky === "storm") && (
           <g className="mw-fx-rain">
             {RAIN.map(([x, y], i) => (
-              <path key={i} d={`M${x} ${y} l-10 26`} stroke={art.rain} strokeWidth={6} strokeLinecap="round" />
+              <path
+                key={i}
+                d={`M${x} ${y} l-10 26`}
+                stroke={art.rain}
+                strokeWidth={6}
+                strokeLinecap="round"
+              />
             ))}
           </g>
         )}
         {windy && (
-          <g fill="none" stroke={art.cream} strokeWidth={stroke.detail} strokeLinecap="round" opacity={0.9}>
+          <g
+            fill="none"
+            stroke={art.cream}
+            strokeWidth={stroke.detail}
+            strokeLinecap="round"
+            opacity={0.9}
+          >
             <path d="M24 470 C70 456 104 480 148 466 C172 458 174 432 154 430" />
             <path d="M462 520 C496 508 530 528 580 516" />
             <path d="M478 330 C506 320 534 334 584 326" />
           </g>
         )}
         {sky === "snow" &&
-          SNOW.map(([x, y], i) => <circle key={i} cx={x} cy={y} r={i % 4 === 0 ? 7 : 4.5} fill={art.snow} opacity={0.9} />)}
+          SNOW.map(([x, y], i) => (
+            <circle key={i} cx={x} cy={y} r={i % 4 === 0 ? 7 : 4.5} fill={art.snow} opacity={0.9} />
+          ))}
       </g>
     );
   }
@@ -108,9 +157,19 @@ export function Effects({ sky, windy, filter, layer }: EffectsProps) {
   return (
     <g className="mw-fx mw-fx-front" filter={f} aria-hidden="true">
       {(sky === "rain" || sky === "storm") &&
-        EDGE.map(([x, y], i) => <path key={i} d={`M${x} ${y} l-10 26`} stroke={art.rain} strokeWidth={6} strokeLinecap="round" />)}
+        EDGE.map(([x, y], i) => (
+          <path
+            key={i}
+            d={`M${x} ${y} l-10 26`}
+            stroke={art.rain}
+            strokeWidth={6}
+            strokeLinecap="round"
+          />
+        ))}
       {sky === "snow" &&
-        EDGE.map(([x, y], i) => <circle key={i} cx={x} cy={y} r={6} fill={art.snow} stroke={ink} strokeWidth={2.5} />)}
+        EDGE.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={6} fill={art.snow} stroke={ink} strokeWidth={2.5} />
+        ))}
     </g>
   );
 }

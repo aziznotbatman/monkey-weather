@@ -1,11 +1,23 @@
 import { MONKEY_LINES, pick, STEADY_HEADLINES } from "./lines";
 import { applyChange } from "./outfitState";
 import type { Change, DaySummary, HourPoint, OutfitPlan, Profile } from "./schema";
-import { findClash, ITEM_LABEL, ITEM_SLOT, type ItemId, type Mood, type OutfitState, type Slot } from "./wardrobe";
+import {
+  findClash,
+  ITEM_LABEL,
+  ITEM_SLOT,
+  type ItemId,
+  type Mood,
+  type OutfitState,
+  type Slot,
+} from "./wardrobe";
 
 /** Thresholds (feels-like °C after the profile shift). Tuned by looking at the 7 fixtures. */
 export const BAND = { hot: 27, warm: 21, mild: 15, cool: 9, cold: 3 } as const;
-export const SENSITIVITY_SHIFT: Record<Profile["sensitivity"], number> = { cold: -3, normal: 0, warm: 3 };
+export const SENSITIVITY_SHIFT: Record<Profile["sensitivity"], number> = {
+  cold: -3,
+  normal: 0,
+  warm: 3,
+};
 export const CYCLING_CHILL = 2;
 export const RAIN_PROB = 60;
 export const UMBRELLA_MAX_WIND = 35;
@@ -19,7 +31,11 @@ export const MAX_CHANGES = 4;
 const SNOW_CODES = new Set([71, 73, 75, 77, 85, 86]);
 
 export function effectiveTemp(p: Pick<HourPoint, "feelsLikeC">, profile: Profile): number {
-  return p.feelsLikeC + SENSITIVITY_SHIFT[profile.sensitivity] - (profile.getAround === "cycling" ? CYCLING_CHILL : 0);
+  return (
+    p.feelsLikeC +
+    SENSITIVITY_SHIFT[profile.sensitivity] -
+    (profile.getAround === "cycling" ? CYCLING_CHILL : 0)
+  );
 }
 
 export const isRainy = (p: HourPoint): boolean => p.rainProb >= RAIN_PROB;
@@ -28,16 +44,30 @@ export const isSnowy = (p: HourPoint): boolean => SNOW_CODES.has(p.weatherCode);
 function byTemperature(e: number, p: HourPoint, profile: Profile): OutfitState {
   const smart = profile.style === "smart";
   if (e >= BAND.hot) {
-    return { top: "tshirt", bottom: smart && e < 30 ? "trousers" : "shorts", footwear: !smart && p.rainProb < 30 ? "sandals" : "sneakers" };
+    return {
+      top: "tshirt",
+      bottom: smart && e < 30 ? "trousers" : "shorts",
+      footwear: !smart && p.rainProb < 30 ? "sandals" : "sneakers",
+    };
   }
   if (e >= BAND.warm) {
-    return { top: "tshirt", bottom: !smart && e >= 23 ? "shorts" : "trousers", footwear: "sneakers" };
+    return {
+      top: "tshirt",
+      bottom: !smart && e >= 23 ? "shorts" : "trousers",
+      footwear: "sneakers",
+    };
   }
   if (e >= BAND.mild) {
-    return { top: "longsleeve", outer: "lightjacket", bottom: "trousers", footwear: smart ? "boots" : "sneakers" };
+    return {
+      top: "longsleeve",
+      outer: "lightjacket",
+      bottom: "trousers",
+      footwear: smart ? "boots" : "sneakers",
+    };
   }
   if (e >= BAND.cool) {
-    const top: ItemId = profile.getAround === "transit" ? "longsleeve" : smart ? "sweater" : "hoodie";
+    const top: ItemId =
+      profile.getAround === "transit" ? "longsleeve" : smart ? "sweater" : "hoodie";
     return {
       top,
       outer: "lightjacket",
@@ -46,7 +76,14 @@ function byTemperature(e: number, p: HourPoint, profile: Profile): OutfitState {
       ...(p.windKmh >= SCARF_WIND ? { neck: "scarf" as const } : {}),
     };
   }
-  const cold: OutfitState = { top: "sweater", outer: "puffer", bottom: "trousers", footwear: "boots", head: "beanie", neck: "scarf" };
+  const cold: OutfitState = {
+    top: "sweater",
+    outer: "puffer",
+    bottom: "trousers",
+    footwear: "boots",
+    head: "beanie",
+    neck: "scarf",
+  };
   return e < BAND.cold ? { ...cold, hands: "gloves" } : cold;
 }
 
@@ -59,7 +96,8 @@ export function resolveClashes(state: OutfitState): OutfitState {
     const [a, b] = clash;
     const pair = `${a}+${b}`;
     if (pair === "puffer+shorts" || pair === "shorts+gloves") s = { ...s, bottom: "trousers" };
-    else if (pair === "puffer+sandals" || pair === "sandals+beanie" || pair === "sandals+gloves") s = { ...s, footwear: "boots" };
+    else if (pair === "puffer+sandals" || pair === "sandals+beanie" || pair === "sandals+gloves")
+      s = { ...s, footwear: "boots" };
     else if (pair === "sunhat+scarf") s = { ...s, head: "beanie" };
     else return s;
   }
@@ -115,7 +153,8 @@ function holdNeeded(slot: Slot, from: ItemId | undefined, to: ItemId | undefined
 function significance(c: Change, stateBefore: OutfitState, base: OutfitState): number {
   if (c.item === "rainboots") return base.footwear === "boots" ? 3 : 7;
   if (RAIN_ITEMS.has(c.item)) return c.action === "add" ? 10 : 6;
-  if (c.action === "remove" && (c.item === "sunglasses" || c.item === "cap" || c.item === "sunhat")) return 1;
+  if (c.action === "remove" && (c.item === "sunglasses" || c.item === "cap" || c.item === "sunhat"))
+    return 1;
   const slot = ITEM_SLOT[c.item];
   if (slot === "outer") return 8;
   if (slot === "eyes" || c.item === "cap" || c.item === "sunhat") return 5;
@@ -189,7 +228,14 @@ export function planChanges(summary: DaySummary, profile: Profile, base: OutfitS
 function headlineFor(base: OutfitState, changes: Change[], mood: Mood, seed: string): string {
   if (changes.length === 0) return pick(STEADY_HEADLINES[mood], seed);
   const lead = base.outer ?? base.top ?? "tshirt";
-  const rank = (c: Change) => (c.action !== "add" ? 0 : c.item === "umbrella" || c.item === "raincoat" ? 3 : c.item === "rainboots" ? 2 : 1);
+  const rank = (c: Change) =>
+    c.action !== "add"
+      ? 0
+      : c.item === "umbrella" || c.item === "raincoat"
+        ? 3
+        : c.item === "rainboots"
+          ? 2
+          : 1;
   const key = [...changes].sort((a, b) => rank(b) - rank(a))[0];
   const leadLabel = ITEM_LABEL[lead].replace(/^./, (m) => m.toUpperCase());
   const what = key.action === "add" ? ITEM_LABEL[key.item] : `lose the ${ITEM_LABEL[key.item]}`;

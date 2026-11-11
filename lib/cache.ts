@@ -35,7 +35,10 @@ export const CACHE_TTL_MS = 30 * 60 * 1000;
  * (without display units) + a hash of the compact summary + prompt version.
  */
 export function outfitCacheKey(summary: DaySummary, profile: Profile): string {
-  const place = summary.placeLabel.toLowerCase().normalize("NFKD").replace(/[^a-z]/g, "");
+  const place = summary.placeLabel
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z]/g, "");
   const bucket = summary.hours[0]?.time ?? "00:00";
   const p = `${profile.sensitivity}-${profile.getAround}-${profile.style}`;
   const digest = hashString(JSON.stringify(summary.hours)).toString(36);

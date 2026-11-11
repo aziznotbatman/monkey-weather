@@ -2,7 +2,10 @@ import type { Change } from "./schema";
 import { ITEM_SLOT, type OutfitState, type Slot } from "./wardrobe";
 
 /** Apply one change to an outfit. `add` puts the item in its slot (swapping out what was there). */
-export function applyChange(state: OutfitState, change: Pick<Change, "action" | "item">): OutfitState {
+export function applyChange(
+  state: OutfitState,
+  change: Pick<Change, "action" | "item">,
+): OutfitState {
   const slot: Slot = ITEM_SLOT[change.item];
   if (change.action === "add") return { ...state, [slot]: change.item };
   if (state[slot] !== change.item) return state;
