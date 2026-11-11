@@ -57,11 +57,23 @@ test("big swing: tapping a note previews the monkey at that time", async ({ page
   await page.goto("/");
   const monkey = page.locator("article").getByRole("img").first();
   await expect(monkey).toHaveAttribute("aria-label", /puffer jacket/);
+  const worn = page.getByRole("region", { name: /Wearing from 07:00/ });
+  await expect(worn.getByRole("listitem")).toHaveText([
+    "Puffer jacket",
+    "Sweater",
+    "Trousers",
+    "Boots",
+    "Beanie",
+    "Scarf",
+  ]);
   const note = page.getByRole("button", { name: /17:00/ });
   await note.click();
   await expect(note).toHaveAttribute("aria-pressed", "true");
   await expect(monkey).toHaveAttribute("aria-label", /umbrella/);
   await expect(page.getByText(/At 17:00 ·/)).toBeVisible();
+  const wornLater = page.getByRole("region", { name: "Wearing at 17:00" });
+  await expect(wornLater.getByText("Umbrella")).toBeVisible();
+  await expect(wornLater.getByText("Puffer jacket")).toHaveCount(0);
   await page.screenshot({ path: shot("preview-17", info.project.name) });
   await page.getByRole("button", { name: "← Back to morning" }).first().click();
   await expect(monkey).toHaveAttribute("aria-label", /puffer jacket/);

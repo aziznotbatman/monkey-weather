@@ -225,7 +225,13 @@ export function planChanges(summary: DaySummary, profile: Profile, base: OutfitS
   return out;
 }
 
-function headlineFor(base: OutfitState, changes: Change[], mood: Mood, seed: string): string {
+/** "Puffer jacket now, umbrella at 17:00." or, with no changes, a steady-day line. */
+export function headlineFor(
+  base: OutfitState,
+  changes: Change[],
+  mood: Mood,
+  seed: string,
+): string {
   if (changes.length === 0) return pick(STEADY_HEADLINES[mood], seed);
   const lead = base.outer ?? base.top ?? "tshirt";
   const rank = (c: Change) =>

@@ -43,6 +43,7 @@ The character carries the personality: deadpan, a bit ugly, dry-witted ("My ears
 | **Fixed wardrobe: 20 items in 9 slots, drawn on one skeleton.** | Every garment is authored against the same anchor points, so any combination fits. It also makes the AI's job safe (see 5). | `monkey-sheet.png` |
 | **Location only after a tap; nothing stored on the server.** | Trust. The forecast is fetched by the visitor's own browser; the server never sees coordinates. | Landing screen |
 | **Honest fallback.** When the rule engine answers instead of the AI, the card says "Monkey's backup brain is on duty". | Being upfront about what produced the answer. | Any card without a key |
+| **"Wearing" list under the notes.** Every piece on the chimp as a small drawing with its name; it follows the tapped note and highlights what just changed. | The drawing is the fun part, the list is the scannable part: you can check the outfit in one glance, without decoding the illustration. | `card-*-mobile-full.png` |
 | **Error states with a face.** Location denied, city not found, offline, forecast failed, too many requests: each has a chimp expression and a plain sentence with a next step. | No raw errors, no blank screens. | e2e screenshots |
 
 TODO(Aziz): pick the 3–4 decisions you're proudest of for the portfolio page, and say in your words what you tried first and changed. (One real example from the build: the first character was a cute generic monkey. Seeing it next to the references, I redirected it to a funnier, slightly ugly chimp inspired by vintage dressed-chimp photography.)
@@ -60,7 +61,9 @@ It is deliberately **boxed in**:
 
 The result: the AI can make the outfit *smarter and the copy warmer*, but it can never make the product *wrong or broken*.
 
-TODO(Aziz): once the key is in, compare a few AI plans with the rule engine on the same days and write one honest paragraph on what the AI adds (or doesn't).
+**What the first live comparison showed (11 Nov 2026, 8 fixture days × profiles, Gemini Flash-Lite free tier):** asked to plan from scratch, the AI made worse outfits than the rule engine (a light jacket at 4 °C, rain boots in snow, a forgotten umbrella), wrote headlines that were titles rather than instructions ("Melting in Palermo"), and copied the example lines it was given. So the roles changed: the AI now gets the rule engine's outfit as a **draft**, may change it only with a concrete reason from the data, and mainly writes the words. The validator enforces the rest: a headline must name a real change time, a missing umbrella on a rainy afternoon is put back, and a copied house line is swapped for the day's own. After that, the AI's outfits matched or sensibly adjusted the draft (e.g. a lighter layer for someone who runs warm and takes the tram). Some free-tier calls still time out or hit "high demand", and the backup brain answers those.
+
+TODO(Aziz): your one-line takeaway, e.g. what this taught you about where AI belongs in a product.
 
 ## 6. Build
 

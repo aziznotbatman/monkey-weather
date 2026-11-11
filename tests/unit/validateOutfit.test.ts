@@ -1,5 +1,13 @@
 import { describe, expect, test } from "vitest";
-import { capText, cleanText, validateOutfit } from "@/lib/validateOutfit";
+import {
+  capText,
+  cleanText,
+  headlineMatchesChanges,
+  isHouseLineCopy,
+  validateOutfit,
+} from "@/lib/validateOutfit";
+import { buildUserMessage, SYSTEM_PROMPT } from "@/lib/prompt";
+import { ruleEngine } from "@/lib/ruleEngine";
 import { profile, summaryFor } from "./helpers";
 
 const summary = summaryFor("big-swing");
@@ -135,6 +143,91 @@ describe("validateOutfit", () => {
       reason: "x",
     }));
     expect(validateOutfit({ ...good, changes }, summary, profile())).toBeNull();
+  });
+});
+
+describe("headline must say when", () => {
+  const at = (time: string) => ({
+    time,
+    action: "add" as const,
+    item: "umbrella" as const,
+    reason: "",
+  });
+
+  test("headlineMatchesChanges", () => {
+    expect(headlineMatchesChanges("Puffer now, umbrella at 17:00.", [at("17:00")])).toBe(true);
+    expect(headlineMatchesChanges("Melting in Palermo", [at("17:00")])).toBe(false);
+    expect(headlineMatchesChanges("Puffer now, umbrella at 15:00.", [at("17:00")])).toBe(false);
+    expect(headlineMatchesChanges("One outfit, all day. Lovely.", [])).toBe(true);
+    expect(headlineMatchesChanges("Umbrella at 17:00.", [])).toBe(false);
+  });
+
+  test("a title-style headline on a day with changes is replaced by a timed one", () => {
+    const r = validateOutfit(
+      { ...good, headline: "Chilly morning turns to rain" },
+      summary,
+      profile(),
+    );
+    expect(r?.repairs).toContain("headline_when");
+    expect(r?.plan.headline).toMatch(/now, .* at 17:00\.$/);
+  });
+
+  test("a headline naming a time with no change at it is replaced", () => {
+    const r = validateOutfit(
+      { ...good, headline: "Puffer now, umbrella at 15:00." },
+      summary,
+      profile(),
+    );
+    expect(r?.repairs).toContain("headline_when");
+    expect(r?.plan.headline).toMatch(/at 17:00\.$/);
+  });
+
+  test("a copied house line is swapped for the day's own line", () => {
+    const copied = "My ears are filing a formal complaint about the cold.";
+    const r = validateOutfit({ ...good, monkeyLine: copied }, summary, profile());
+    expect(r?.repairs).toContain("monkeyLine_copied");
+    expect(r?.plan.monkeyLine).toBe(ruleEngine(summary, profile()).monkeyLine);
+  });
+
+  test("a lightly reworded house line still counts as a copy; a new line doesn't", () => {
+    expect(
+      isHouseLineCopy(
+        "Cold enough that I am considering hibernation. Monkeys do not do that. I checked.",
+      ),
+    ).toBe(true);
+    expect(isHouseLineCopy("My fur has opinions about this drizzle, none of them kind.")).toBe(
+      false,
+    );
+  });
+
+  test("rain guard puts the umbrella back when the AI forgets the 17:00 rain", () => {
+    const noRain = { ...good, changes: [good.changes[0]] };
+    const r = validateOutfit(noRain, summary, profile());
+    expect(r?.repairs).toContain("rain_guard");
+    expect(r?.plan.changes.map((c) => `${c.time} ${c.action} ${c.item}`)).toContain(
+      "17:00 add umbrella",
+    );
+  });
+
+  test("rain guard leaves a raincoat answer alone", () => {
+    const coat = {
+      ...good,
+      changes: [{ time: "17:00", action: "add", item: "raincoat", reason: "rain from 17:00" }],
+    };
+    expect(validateOutfit(coat, summary, profile())?.repairs).not.toContain("rain_guard");
+  });
+
+  test("the user message carries the rule engine's clothes as a draft, not its copy", () => {
+    const msg = JSON.parse(buildUserMessage(summary, profile()));
+    expect(msg.draft.base).toEqual(ruleEngine(summary, profile()).base);
+    expect(msg.draft.headline).toBeUndefined();
+    expect(msg.profile.units).toBeUndefined();
+  });
+
+  test("the prompt carries the house voice and the headline format", () => {
+    expect(SYSTEM_PROMPT).toContain("My ears are filing a formal complaint about the cold.");
+    expect(SYSTEM_PROMPT).toContain("Puffer jacket now, umbrella at 17:00.");
+    expect(SYSTEM_PROMPT).not.toMatch(/\$\{/);
   });
 });
 

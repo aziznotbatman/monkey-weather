@@ -12,6 +12,7 @@ import { formatTemp } from "@/lib/units";
 import type { DayChoice } from "@/lib/weather";
 import { ChangeNotes } from "./ChangeNotes";
 import { DayStrip } from "./DayStrip";
+import { WornList } from "./WornList";
 import styles from "./app.module.css";
 
 interface OutfitCardProps {
@@ -172,6 +173,13 @@ export function OutfitCard(props: OutfitCardProps) {
       )}
 
       <ChangeNotes plan={outfit} activeIndex={active} onSelect={select} startLabel={startLabel} />
+      <WornList
+        outfit={shown}
+        changedSlots={popSlots}
+        popKey={popKey}
+        time={time}
+        isPreview={activeChange !== null}
+      />
       <DayStrip
         summary={summary}
         changes={outfit.changes}
