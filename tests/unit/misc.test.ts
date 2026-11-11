@@ -1,12 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { createTtlCache, outfitCacheKey } from "@/lib/cache";
 import { applyChange, changedSlots, outfitAt } from "@/lib/outfitState";
-import { createRateLimiter } from "@/lib/ratelimit";
 import { contrastRatio, skyFor } from "@/lib/theme";
 import { sky, ui, ink } from "@/lib/tokens";
 import { cToF, defaultUnitsForLocale, formatTemp, roundHalf } from "@/lib/units";
 import { describeOutfit } from "@/lib/wardrobe";
-import { profile, summaryFor } from "./helpers";
+import { summaryFor } from "./helpers";
 
 describe("units", () => {
   test("converts and formats", () => {
@@ -54,50 +52,6 @@ describe("outfit state", () => {
       "T-shirt, shorts and sandals",
     );
     expect(describeOutfit({})).toBe("nothing at all");
-  });
-});
-
-describe("rate limiter", () => {
-  test("allows up to the limit in the window, then blocks with retry-after", () => {
-    const rl = createRateLimiter({ limit: 3, windowMs: 1000 });
-    expect(rl("a", 0).ok).toBe(true);
-    expect(rl("a", 100).ok).toBe(true);
-    expect(rl("a", 200).ok).toBe(true);
-    const blocked = rl("a", 300);
-    expect(blocked.ok).toBe(false);
-    expect(blocked.retryAfterSec).toBe(1);
-    expect(rl("b", 300).ok).toBe(true);
-    expect(rl("a", 1001).ok).toBe(true);
-  });
-  test("bounds memory", () => {
-    const rl = createRateLimiter({ limit: 1, windowMs: 1000, maxKeys: 2 });
-    rl("a", 0);
-    rl("b", 0);
-    rl("c", 0);
-    expect(rl("a", 1).ok).toBe(true);
-  });
-});
-
-describe("cache", () => {
-  test("expires after the TTL and evicts the oldest", () => {
-    const c = createTtlCache<number>({ ttlMs: 100, maxEntries: 2 });
-    c.set("a", 1, 0);
-    expect(c.get("a", 50)).toBe(1);
-    expect(c.get("a", 150)).toBeUndefined();
-    c.set("x", 1, 0);
-    c.set("y", 2, 0);
-    c.set("z", 3, 0);
-    expect(c.get("x", 1)).toBeUndefined();
-    expect(c.size()).toBe(2);
-  });
-  test("key ignores display units but not the profile", () => {
-    const s = summaryFor("cool-rain");
-    expect(outfitCacheKey(s, profile({ units: "C" }))).toBe(
-      outfitCacheKey(s, profile({ units: "F" })),
-    );
-    expect(outfitCacheKey(s, profile())).not.toBe(
-      outfitCacheKey(s, profile({ sensitivity: "cold" })),
-    );
   });
 });
 

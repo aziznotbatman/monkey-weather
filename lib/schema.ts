@@ -43,10 +43,6 @@ export const ProfileSchema = z
   })
   .strict();
 
-export const OutfitRequestSchema = z
-  .object({ summary: DaySummarySchema, profile: ProfileSchema })
-  .strict();
-
 const ItemIdSchema = z.enum(ITEM_IDS);
 
 export const ChangeSchema = z
@@ -67,7 +63,7 @@ const BaseSchema = z
   )
   .strict();
 
-/** What a valid outfit looks like after validation (before `source` is attached). */
+/** The shape of a day's outfit plan (produced by the rule engine). */
 export const OutfitPlanSchema = z
   .object({
     headline: z.string().min(1).max(60),
@@ -78,53 +74,13 @@ export const OutfitPlanSchema = z
   })
   .strict();
 
-/**
- * The schema the model must fill (OpenAI Structured Outputs, strict mode).
- * Strict mode needs every key present, so empty slots are `null` here and the base
- * is a list of slot entries. `source` is deliberately absent: the server sets it.
- */
-export const AiOutfitSchema = z
-  .object({
-    headline: z.string().describe("<= 60 chars, the monkey's voice"),
-    monkeyLine: z.string().describe("<= 120 chars, one dry, warm line"),
-    mood: z.enum(MOODS),
-    base: z
-      .object({
-        head: z.enum(["beanie", "cap", "sunhat"]).nullable(),
-        eyes: z.enum(["sunglasses"]).nullable(),
-        neck: z.enum(["scarf"]).nullable(),
-        top: z.enum(["tshirt", "longsleeve", "sweater", "hoodie"]),
-        outer: z.enum(["lightjacket", "raincoat", "puffer"]).nullable(),
-        bottom: z.enum(["shorts", "trousers"]),
-        footwear: z.enum(["sandals", "sneakers", "boots", "rainboots"]),
-        hands: z.enum(["gloves"]).nullable(),
-        carry: z.enum(["umbrella"]).nullable(),
-      })
-      .strict(),
-    changes: z
-      .array(
-        z
-          .object({
-            time: z.string().describe('"HH:00" local, inside the forecast window'),
-            action: z.enum(["add", "remove"]),
-            item: ItemIdSchema,
-            reason: z.string().describe("<= 60 chars, plain and factual"),
-          })
-          .strict(),
-      )
-      .describe("0 to 4 changes, chronological"),
-  })
-  .strict();
-
 export type HourPoint = z.infer<typeof HourPointSchema>;
 export type DaySummary = z.infer<typeof DaySummarySchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
-export type OutfitRequest = z.infer<typeof OutfitRequestSchema>;
 export type Change = { time: string; action: "add" | "remove"; item: ItemId; reason: string };
 export type OutfitPlan = Omit<z.infer<typeof OutfitPlanSchema>, "changes"> & { changes: Change[] };
-export type AiOutfit = z.infer<typeof AiOutfitSchema>;
-export type OutfitSource = "ai" | "fallback";
-export type Outfit = OutfitPlan & { source: OutfitSource };
+/** A day's plan as the card shows it. */
+export type Outfit = OutfitPlan;
 
 export const DEFAULT_PROFILE: Profile = {
   sensitivity: "normal",

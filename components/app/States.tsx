@@ -92,7 +92,7 @@ export function Loading({ placeName }: { placeName: string }) {
   );
 }
 
-export type ErrorKind = "denied" | "geo_unavailable" | "offline" | "forecast" | "rate_limited";
+export type ErrorKind = "denied" | "geo_unavailable" | "offline" | "forecast";
 
 const ERRORS: Record<ErrorKind, { mood: UiMood; title: string; body: string }> = {
   denied: {
@@ -115,21 +115,15 @@ const ERRORS: Record<ErrorKind, { mood: UiMood; title: string; body: string }> =
     title: "The weather service didn't answer.",
     body: "It happens. Give it a moment and try again.",
   },
-  rate_limited: {
-    mood: "thinking",
-    title: "Too many questions at once.",
-    body: "Even monkeys need a breather. Try again in a minute.",
-  },
 };
 
 interface ErrorViewProps {
   kind: ErrorKind;
   onRetry?: () => void;
   onSearch: () => void;
-  retryInSec?: number;
 }
 
-export function ErrorView({ kind, onRetry, onSearch, retryInSec }: ErrorViewProps) {
+export function ErrorView({ kind, onRetry, onSearch }: ErrorViewProps) {
   const e = ERRORS[kind];
   return (
     <section className={styles.errorState} role="alert" aria-labelledby="err-title">
@@ -142,13 +136,8 @@ export function ErrorView({ kind, onRetry, onSearch, retryInSec }: ErrorViewProp
       <p className={styles.monkeyLine}>{e.body}</p>
       <div className={styles.ctaRow}>
         {onRetry && (
-          <button
-            type="button"
-            className={styles.primaryBtn}
-            onClick={onRetry}
-            disabled={Boolean(retryInSec && retryInSec > 0)}
-          >
-            {retryInSec && retryInSec > 0 ? `Try again in ${retryInSec}s` : "Try again"}
+          <button type="button" className={styles.primaryBtn} onClick={onRetry}>
+            Try again
           </button>
         )}
         <button type="button" className={styles.secondaryBtn} onClick={onSearch}>

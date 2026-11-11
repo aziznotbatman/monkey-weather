@@ -46,7 +46,6 @@ for (const s of SCENARIOS) {
     await expect(card.getByRole("heading", { level: 1 })).toBeVisible();
     const label = await card.getByRole("img").first().getAttribute("aria-label");
     expect(label).toMatch(/wearing .*(T-shirt|sweater|hoodie|long-sleeve)/);
-    await expect(page.getByText("backup brain")).toBeVisible();
     await page.screenshot({ path: shot(`card-${s.id}`, info.project.name), fullPage: true });
   });
 }
@@ -156,53 +155,6 @@ test.describe("edge states", () => {
     );
     await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
   });
-
-  test("outfit server down → backup brain runs in the browser", async ({ page }) => {
-    await mockWeather(page, "cool-rain");
-    await savedPlace(page);
-    await page.route("**/api/outfit", (r) => r.fulfill({ status: 500, body: "oops" }));
-    await page.goto("/");
-    await expect(page.locator("article").getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByText("backup brain")).toBeVisible();
-  });
-
-  test("AI answer is shown without the backup note", async ({ page }) => {
-    await mockWeather(page, "cool-rain");
-    await savedPlace(page);
-    await page.route("**/api/outfit", (r) =>
-      r.fulfill({
-        json: {
-          outfit: {
-            headline: "Jacket now, umbrella by lunch.",
-            monkeyLine: "I asked the clouds. They were vague.",
-            mood: "happy",
-            base: { top: "hoodie", outer: "lightjacket", bottom: "trousers", footwear: "sneakers" },
-            changes: [
-              { time: "11:00", action: "add", item: "umbrella", reason: "rain from 11:00" },
-            ],
-            source: "ai",
-          },
-        },
-      }),
-    );
-    await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Jacket now, umbrella by lunch.",
-    );
-    await expect(page.getByText("backup brain")).toHaveCount(0);
-  });
-
-  test("rate limited → wait message with countdown", async ({ page }, info) => {
-    await mockWeather(page, "cool-rain");
-    await savedPlace(page);
-    await page.route("**/api/outfit", (r) =>
-      r.fulfill({ status: 429, json: { error: "rate_limited", retryAfterSec: 42 } }),
-    );
-    await page.goto("/");
-    await expect(page.locator("section[role=alert]")).toContainText("Too many questions");
-    await expect(page.getByRole("button", { name: /Try again in \d+s/ })).toBeDisabled();
-    await page.screenshot({ path: shot("err-ratelimited", info.project.name) });
-  });
 });
 
 test("demo mode shows the hero day without any location", async ({ page }) => {
@@ -210,17 +162,14 @@ test("demo mode shows the hero day without any location", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText("umbrella at 17:00");
 });
 
-test("API: health exposes only aiConfigured", async ({ request }) => {
-  const res = await request.get("/api/health");
-  expect(await res.json()).toEqual({ aiConfigured: false });
-});
-
-test("API: cross-site POST is refused, bad body is 400", async ({ request }) => {
-  const cross = await request.post("/api/outfit", {
-    data: {},
-    headers: { origin: "https://evil.example", "sec-fetch-site": "cross-site" },
+test("the outfit is worked out in the browser: no requests to our server", async ({ page }) => {
+  const ownApi: string[] = [];
+  page.on("request", (r) => {
+    if (new URL(r.url()).pathname.startsWith("/api/")) ownApi.push(r.url());
   });
-  expect(cross.status()).toBe(403);
-  const bad = await request.post("/api/outfit", { data: { nope: 1 } });
-  expect(bad.status()).toBe(400);
+  await mockWeather(page, "big-swing");
+  await savedPlace(page);
+  await page.goto("/");
+  await expect(page.locator("article").getByRole("heading", { level: 1 })).toBeVisible();
+  expect(ownApi).toEqual([]);
 });

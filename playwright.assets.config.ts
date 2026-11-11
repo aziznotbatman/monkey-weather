@@ -11,9 +11,8 @@ export default defineConfig({
   use: { reducedMotion: "reduce", baseURL: `http://localhost:${PORT}` },
   webServer: {
     command: `npm run build && npx next start --port ${PORT}`,
-    url: `http://localhost:${PORT}/api/health`,
+    url: `http://localhost:${PORT}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
-    env: { AI_API_KEY: "", OUTFIT_RATE_LIMIT: "10000" },
   },
 });

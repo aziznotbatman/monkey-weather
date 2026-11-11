@@ -26,7 +26,6 @@ interface OutfitCardProps {
   onChangePlace: () => void;
   onOpenPrefs: () => void;
   onSky: (s: SkyKind) => void;
-  busy?: boolean;
 }
 
 function dayTitle(day: DayChoice, dateISO: string): string {
@@ -91,7 +90,7 @@ export function OutfitCard(props: OutfitCardProps) {
   const range = feelsRange(summary);
 
   return (
-    <article className={styles.card} aria-busy={props.busy || undefined}>
+    <article className={styles.card}>
       <div className={styles.topRow}>
         <button
           type="button"
@@ -166,11 +165,6 @@ export function OutfitCard(props: OutfitCardProps) {
 
       <h1 className={styles.headline}>{outfit.headline}</h1>
       <p className={styles.monkeyLine}>&ldquo;{outfit.monkeyLine}&rdquo;</p>
-      {outfit.source === "fallback" && (
-        <p className={styles.backupNote}>
-          Monkey&rsquo;s backup brain is on duty: this plan comes from built-in rules, not the AI.
-        </p>
-      )}
 
       <ChangeNotes plan={outfit} activeIndex={active} onSelect={select} startLabel={startLabel} />
       <WornList

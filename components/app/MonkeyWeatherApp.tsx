@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { demoForecast } from "@/lib/fixtures";
 import {
-  getOutfit,
   loadPlace,
   loadProfile,
   saveProfile,
   savePlace,
   type SavedPlace,
 } from "@/lib/client";
+import { ruleEngine } from "@/lib/ruleEngine";
 import { DEFAULT_PROFILE, type DaySummary, type Outfit, type Profile } from "@/lib/schema";
 import { skyFor } from "@/lib/theme";
 import { sky as skies, type SkyKind } from "@/lib/tokens";
@@ -40,7 +40,7 @@ type View =
       summary: DaySummary;
       outfit: Outfit;
     }
-  | { kind: "error"; error: ErrorKind; place?: SavedPlace; retryAt?: number };
+  | { kind: "error"; error: ErrorKind; place?: SavedPlace };
 
 const GEO_TIMEOUT_MS = 10_000;
 
@@ -50,9 +50,7 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
   const [picker, setPicker] = useState(false);
   const [prefs, setPrefs] = useState(false);
   const [locating, setLocating] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [skyKind, setSkyKind] = useState<SkyKind>("partly");
-  const [now, setNow] = useState(0);
   const run = useRef<AbortController | null>(null);
   /** Demo mode pins the clock to 06:30 on the demo day so the whole day is visible. */
   const demoNow = useRef<number | undefined>(undefined);
@@ -63,14 +61,9 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
     return run.current.signal;
   };
 
+  /** The rule engine runs right here in the browser: instant, offline-safe, nothing sent anywhere. */
   const showOutfit = useCallback(
-    async (
-      place: SavedPlace,
-      forecast: Forecast,
-      day: DayChoice,
-      p: Profile,
-      signal: AbortSignal,
-    ) => {
+    (place: SavedPlace, forecast: Forecast, day: DayChoice, p: Profile) => {
       const summary = buildDaySummary(forecast, {
         choice: day,
         placeLabel: place.label,
@@ -80,25 +73,19 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
         setView({ kind: "error", error: "forecast", place });
         return;
       }
-      const res = await getOutfit(summary, p, signal);
-      if (signal.aborted) return;
-      if (!res.ok) {
-        const t = Date.now();
-        setNow(t);
-        setView({
-          kind: "error",
-          error: "rate_limited",
-          place,
-          retryAt: t + res.retryAfterSec * 1000,
-        });
-        return;
-      }
       const actualDay: DayChoice =
         summary.dateISO === localNow(forecast.utc_offset_seconds, demoNow.current).dateISO
           ? "today"
           : "tomorrow";
       setSkyKind(skyFor(summary.hours[0]));
-      setView({ kind: "result", place, forecast, day: actualDay, summary, outfit: res.outfit });
+      setView({
+        kind: "result",
+        place,
+        forecast,
+        day: actualDay,
+        summary,
+        outfit: ruleEngine(summary, p),
+      });
     },
     [],
   );
@@ -116,7 +103,8 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
           : await fetchForecast(place.latitude, place.longitude, signal);
         const choice =
           day ?? defaultDay(localNow(forecast.utc_offset_seconds, demoNow.current).hour);
-        await showOutfit(place, forecast, choice, p, signal);
+        if (signal.aborted) return;
+        showOutfit(place, forecast, choice, p);
       } catch (err) {
         if (signal.aborted) return;
         const offline =
@@ -144,13 +132,6 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
       if (last) void load(last, p);
     }
   }, [load]);
-
-  // Countdown for the rate-limited state.
-  useEffect(() => {
-    if (view.kind !== "error" || !view.retryAt) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, [view]);
 
   const pickPlace = (pl: Place) => {
     clearDemo();
@@ -196,31 +177,19 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
       window.history.replaceState(null, "", window.location.pathname);
   };
 
-  const updateProfile = async (next: Profile) => {
+  const updateProfile = (next: Profile) => {
     const onlyUnits =
       next.units !== profile.units &&
       JSON.stringify({ ...next, units: profile.units }) === JSON.stringify(profile);
     setProfile(next);
     saveProfile(next);
     if (onlyUnits || view.kind !== "result") return;
-    const signal = fresh();
-    setBusy(true);
-    try {
-      await showOutfit(view.place, view.forecast, view.day, next, signal);
-    } finally {
-      if (!signal.aborted) setBusy(false);
-    }
+    showOutfit(view.place, view.forecast, view.day, next);
   };
 
-  const changeDay = async (d: DayChoice) => {
+  const changeDay = (d: DayChoice) => {
     if (view.kind !== "result") return;
-    const signal = fresh();
-    setBusy(true);
-    try {
-      await showOutfit(view.place, view.forecast, d, profile, signal);
-    } finally {
-      if (!signal.aborted) setBusy(false);
-    }
+    showOutfit(view.place, view.forecast, d, profile);
   };
 
   const theme = skies[view.kind === "result" ? skyKind : "partly"];
@@ -229,8 +198,6 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
     "--sky-text": theme.text,
     "--sky-muted": theme.muted,
   } as CSSProperties;
-  const retryIn =
-    view.kind === "error" && view.retryAt ? Math.max(0, Math.ceil((view.retryAt - now) / 1000)) : 0;
 
   return (
     <div
@@ -252,7 +219,6 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
                 ? () => view.place && void load(view.place, profile)
                 : undefined
             }
-            retryInSec={retryIn}
           />
         )}
         {view.kind === "result" && (
@@ -263,9 +229,8 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
             profile={profile}
             day={view.day}
             placeName={view.place.label}
-            busy={busy}
             onDay={changeDay}
-            onUnits={(units) => void updateProfile({ ...profile, units })}
+            onUnits={(units) => updateProfile({ ...profile, units })}
             onChangePlace={() => setPicker(true)}
             onOpenPrefs={() => setPrefs(true)}
             onSky={setSkyKind}
@@ -282,7 +247,7 @@ export function MonkeyWeatherApp({ portfolioUrl }: { portfolioUrl?: string }) {
       <PrefsSheet
         open={prefs}
         profile={profile}
-        onChange={(p) => void updateProfile(p)}
+        onChange={updateProfile}
         onClose={() => setPrefs(false)}
       />
     </div>
