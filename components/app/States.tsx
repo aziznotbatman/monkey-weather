@@ -55,7 +55,18 @@ export function Landing({ onLocate, onSearch, locating }: LandingProps) {
 
 export function Loading({ placeName }: { placeName: string }) {
   return (
-    <section className={styles.loading} aria-live="polite" aria-busy="true">
+    <section className={styles.loadingCard} aria-live="polite" aria-busy="true">
+      <div className={styles.topRow} aria-hidden="true">
+        <span className={`${styles.chip} ${styles.ghost}`}>
+          <span className={styles.chipText}>{placeName}</span>
+        </span>
+        <span className={`${styles.iconBtn} ${styles.ghost}`} />
+      </div>
+      <div className={styles.secondRow} aria-hidden="true">
+        <span className={`${styles.segmented} ${styles.ghost}`} style={{ width: 168, height: 50 }} />
+        <span className={`${styles.unitBtn} ${styles.ghost}`} style={{ marginLeft: "auto", height: 50 }} />
+      </div>
+      <p className={styles.dayTitle} aria-hidden="true">&nbsp;</p>
       <div className={styles.stage}>
         <Monkey
           uid="think"

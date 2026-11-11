@@ -96,7 +96,7 @@ export function OutfitCard(props: OutfitCardProps) {
           type="button"
           className={styles.chip}
           onClick={props.onChangePlace}
-          aria-label={`Location: ${props.placeName}. Change location`}
+          aria-label={`${props.placeName}, change location`}
         >
           <PinIcon size={20} />
           <span className={styles.chipText}>{props.placeName}</span>
@@ -133,11 +133,7 @@ export function OutfitCard(props: OutfitCardProps) {
           type="button"
           className={styles.unitBtn}
           onClick={() => props.onUnits(u === "C" ? "F" : "C")}
-          aria-label={
-            u === "C"
-              ? "Showing Celsius. Switch to Fahrenheit"
-              : "Showing Fahrenheit. Switch to Celsius"
-          }
+          aria-label={u === "C" ? "°C, switch to Fahrenheit" : "°F, switch to Celsius"}
         >
           °{u}
         </button>

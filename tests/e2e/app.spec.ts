@@ -90,8 +90,8 @@ test("today / tomorrow toggle and unit button", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Tomorrow" }).click();
   await expect(page.getByText(/^Tomorrow,/)).toBeVisible();
-  await page.getByRole("button", { name: /Switch to Fahrenheit/ }).click();
-  await expect(page.getByRole("button", { name: /Switch to Celsius/ })).toBeVisible();
+  await page.getByRole("button", { name: /switch to Fahrenheit/ }).click();
+  await expect(page.getByRole("button", { name: /switch to Celsius/ })).toBeVisible();
 });
 
 test.describe("edge states", () => {

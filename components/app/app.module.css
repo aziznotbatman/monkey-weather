@@ -35,6 +35,8 @@
   width: 100%;
   max-width: 540px;
   flex: 1;
+  /* Keeps the footer below the fold while states swap, so nothing on screen jumps (CLS). */
+  min-height: calc(100dvh - var(--space-5));
 }
 
 /* ---------- Buttons ---------- */
@@ -179,6 +181,21 @@
 .demoLink a {
   text-underline-offset: 4px;
   text-decoration-thickness: 2px;
+}
+
+.loadingCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.loadingCard > .headline,
+.loadingCard > .monkeyLine {
+  text-align: center;
+}
+
+.ghost {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 /* ---------- Card ---------- */
