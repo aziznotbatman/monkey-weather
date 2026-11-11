@@ -49,10 +49,11 @@ export const A = {
 } as const;
 
 /** Limb thickness (fur), in viewBox units. */
-export const LIMB = { arm: 27, leg: 48, tail: 17 } as const;
+export const LIMB = { arm: 30, leg: 48, tail: 17 } as const;
 
-export const ARM_L: Limb = { s: [236, 386], c: [204, 470], e: [194, 590] };
-export const ARM_R: Limb = { s: [364, 386], c: [396, 470], e: [406, 590] };
+/** Long chimp arms: the hands hang down by the knees. */
+export const ARM_L: Limb = { s: [238, 388], c: [196, 500], e: [190, 626] };
+export const ARM_R: Limb = { s: [362, 388], c: [404, 500], e: [410, 626] };
 /** Waving pose (landing screen). */
 export const ARM_R_WAVE: Limb = { s: [366, 388], c: [444, 380], e: [486, 272] };
 

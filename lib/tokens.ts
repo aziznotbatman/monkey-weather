@@ -24,8 +24,11 @@ export const stroke = {
 
 /** Flat art palette: monkey + garments. Sampled by eye from the references and extended. */
 export const art = {
-  fur: "#6B3F14",
-  furDark: "#4E2C0C",
+  fur: "#3E2A1E",
+  furLight: "#5A3E2C",
+  skin: "#E2AE93",
+  skinDark: "#C68C72",
+  skinDeep: "#A86C58",
   tan: "#D9A86C",
   tanDark: "#BF8B4E",
   pink: "#FFB3D6",

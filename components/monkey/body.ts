@@ -1,16 +1,6 @@
 import { art, stroke } from "@/lib/tokens";
-import {
-  ARM_L,
-  ARM_R,
-  ARM_R_WAVE,
-  LEG_L,
-  LEG_R,
-  LIMB,
-  limbPath,
-  pointAt,
-  type Limb,
-} from "./anchors";
-import { area, ellipse, line, tube, type Part } from "./parts";
+import { ARM_L, ARM_R, ARM_R_WAVE, LEG_L, LEG_R, LIMB, limbPath, pointAt, type Limb, type Pt } from "./anchors";
+import { area, ellipse, line, tube, type Detail, type Part } from "./parts";
 
 export type Pose = "stand" | "wave";
 
@@ -31,10 +21,11 @@ export const Z = {
   hands: 80,
   gloves: 82,
   ears: 85,
+  /** The scarf wraps the neck *under* the chimp's big chin. */
+  neck: 87,
   head: 90,
   face: 92,
   expression: 94,
-  neck: 96,
   eyes: 100,
   hat: 110,
   fx: 120,
@@ -44,39 +35,71 @@ export function armsFor(pose: Pose): { left: Limb; right: Limb } {
   return { left: ARM_L, right: pose === "wave" ? ARM_R_WAVE : ARM_R };
 }
 
-const HEAD =
-  "M296 90 C350 85 406 98 425 141 C441 180 436 238 414 285 C392 329 344 350 300 348 C254 346 209 327 189 284 C167 238 163 176 181 136 C199 100 246 92 296 90Z";
+/**
+ * The character: an original, slightly ugly, deadpan chimp. Big jug ears, a heavy brow,
+ * a long pouty muzzle that sticks out below the skull, tiny tired eyes, long arms, big hands.
+ */
 
-const FACE_MASK =
-  "M300 168 C322 149 369 150 381 184 C390 210 385 232 373 246 C397 263 399 303 373 325 C346 345 255 347 228 325 C202 303 204 262 228 246 C214 232 208 207 220 183 C234 151 280 150 300 168Z";
+/** Dark fur skull, a little lumpy on top. */
+const HEAD =
+  "M298 98 C328 92 352 96 374 108 C402 122 420 150 424 186 C428 224 420 262 404 290 C388 318 352 336 300 338 C248 336 212 318 196 290 C180 262 172 224 176 186 C180 150 198 122 226 108 C246 98 270 100 298 98Z";
+
+/** Upper face: a darker heart-shaped mask around the deep-set eyes, under a low hairline. */
+const FACE =
+  "M300 176 C326 164 362 166 378 188 C392 208 390 236 378 256 C364 276 336 282 300 280 C264 282 236 276 222 256 C210 236 208 208 222 188 C238 166 274 164 300 176Z";
+
+/** The big pale muzzle that bulges out below the skull: the funniest part of the face. */
+const MUZZLE =
+  "M300 240 C346 236 392 254 400 296 C408 344 360 386 300 386 C240 386 192 344 200 296 C208 254 254 236 300 240Z";
+
+/** The heavy brow ridge, sitting on top of the mask. */
+const BROW =
+  "M220 200 C228 178 264 172 294 188 L300 192 L306 188 C336 172 372 178 380 200 C366 210 346 206 330 206 C316 206 306 210 300 214 C294 210 284 206 270 206 C254 206 234 210 220 200Z";
 
 const TORSO =
-  "M270 336 C268 352 261 362 246 372 C222 386 213 412 211 452 C207 500 206 542 214 574 C242 592 360 593 388 573 C395 540 393 500 389 452 C387 410 378 386 354 372 C339 362 332 352 330 336Z";
+  "M270 330 C268 348 260 360 244 370 C220 384 211 412 209 452 C205 500 205 542 213 574 C242 592 360 593 389 573 C396 540 395 500 391 452 C389 410 380 384 356 370 C340 360 332 348 330 330Z";
 
 const TAIL = "M228 560 C170 600 104 574 96 512 C90 462 136 436 164 458 C186 476 168 506 144 494";
+/** Chimps have no tail. Flip this if the brief ever wants a "monkey" tail back. */
+export const SHOW_TAIL = false;
 
-function earPath(cx: number, cy: number, r: number, flip = 1): string {
-  // Slightly lopsided circle, flatter on the head side.
-  const k = r * 0.56;
-  return [
+/** A big round jug ear with the inner fold drawn as one C-shaped line. */
+function ear(cx: number, cy: number, r: number, side: -1 | 1): { shape: string; fold: string } {
+  const k = r * 0.58;
+  const shape = [
     `M${cx} ${cy - r}`,
-    `C${cx + k * flip} ${cy - r} ${cx + r * flip} ${cy - k} ${cx + (r - 3) * flip} ${cy + 2}`,
-    `C${cx + (r - 6) * flip} ${cy + k} ${cx + k * flip} ${cy + r - 2} ${cx} ${cy + r - 2}`,
-    `C${cx - k * flip} ${cy + r - 1} ${cx - (r + 2) * flip} ${cy + k} ${cx - (r + 1) * flip} ${cy}`,
-    `C${cx - r * flip} ${cy - k} ${cx - k * flip} ${cy - r} ${cx} ${cy - r}Z`,
+    `C${cx + k * side} ${cy - r - 2} ${cx + (r + 4) * side} ${cy - k} ${cx + (r + 2) * side} ${cy + 4}`,
+    `C${cx + r * side} ${cy + k + 4} ${cx + k * side} ${cy + r} ${cx - 4 * side} ${cy + r - 4}`,
+    `C${cx - k * side} ${cy + r - 8} ${cx - r * side} ${cy + k} ${cx - (r - 4) * side} ${cy}`,
+    `C${cx - r * side} ${cy - k} ${cx - k * side} ${cy - r} ${cx} ${cy - r}Z`,
   ].join(" ");
+  const fold = `M${cx + 6 * side} ${cy - r * 0.55} C${cx + r * 0.62 * side} ${cy - r * 0.45} ${cx + r * 0.66 * side} ${cy + r * 0.3} ${cx + 10 * side} ${cy + r * 0.5}`;
+  return { shape, fold };
 }
+
+/** Big skin-coloured hand with three finger creases. */
+function hand(at: Pt, up: boolean): { shape: string; creases: Detail[] } {
+  const [x, y] = at;
+  const dy = up ? -1 : 1;
+  const cy = y + 22 * dy;
+  const shape = `M${x - 20} ${y + 2 * dy} C${x - 26} ${cy} ${x - 20} ${y + 46 * dy} ${x - 4} ${y + 48 * dy} C${x + 10} ${y + 50 * dy} ${x + 24} ${y + 40 * dy} ${x + 22} ${cy} C${x + 22} ${y + 6 * dy} ${x + 10} ${y - 4 * dy} ${x - 20} ${y + 2 * dy}Z`;
+  const creases = [-8, 1, 10].map((ox) => line(`M${x + ox} ${y + 30 * dy} L${x + ox} ${y + 42 * dy}`, stroke.fine, art.skinDeep));
+  return { shape, creases };
+}
+
+const FOOT_L =
+  "M204 738 C204 716 228 706 254 708 C280 710 296 722 294 740 C292 756 262 760 240 758 C220 756 204 752 204 738Z";
+const FOOT_R =
+  "M308 740 C306 722 322 710 348 708 C374 706 398 716 398 738 C398 752 382 756 360 758 C338 760 310 756 308 740Z";
 
 export function bodyParts(pose: Pose): Part[] {
   const { left, right } = armsFor(pose);
-  const handL = pointAt(left, 1);
-  const handR = pointAt(right, 1);
+  const hl = hand(pointAt(left, 1), false);
+  const hr = hand(pointAt(right, 1), pose === "wave");
+  const earL = ear(150, 228, 56, -1);
+  const earR = ear(452, 224, 53, 1);
+
   const parts: Part[] = [
-    {
-      id: "body-tail",
-      z: Z.tail,
-      shapes: [tube(TAIL, art.fur, LIMB.tail)],
-    },
     {
       id: "body-legs",
       z: Z.legs,
@@ -85,21 +108,10 @@ export function bodyParts(pose: Pose): Part[] {
     {
       id: "body-feet",
       z: Z.feet,
-      shapes: [
-        area(
-          "M214 736 C214 716 236 708 256 710 C280 712 292 724 290 738 C288 752 262 756 244 754 C226 752 214 748 214 736Z",
-          art.tan,
-        ),
-        area(
-          "M312 738 C310 724 322 712 346 710 C366 708 388 716 388 736 C388 748 376 752 358 754 C340 756 314 752 312 738Z",
-          art.tan,
-        ),
-      ],
+      shapes: [area(FOOT_L, art.skin), area(FOOT_R, art.skin)],
       details: [
-        line("M236 742 L238 752", stroke.fine),
-        line("M252 744 L253 754", stroke.fine),
-        line("M348 744 L347 754", stroke.fine),
-        line("M364 742 L362 752", stroke.fine),
+        line("M226 744 L228 756 M242 746 L243 758 M258 746 L258 757", stroke.fine, art.skinDeep),
+        line("M344 746 L344 757 M360 746 L359 758 M376 744 L374 756", stroke.fine, art.skinDeep),
       ],
     },
     {
@@ -107,14 +119,8 @@ export function bodyParts(pose: Pose): Part[] {
       z: Z.torso,
       shapes: [area(TORSO, art.fur)],
       details: [
-        // Tan belly patch, drawn as a soft shape without outline.
-        {
-          d: "M262 430 C262 404 338 404 338 430 C342 478 334 534 300 540 C266 534 258 478 262 430Z",
-          fill: art.tanDark,
-          stroke: "none",
-          opacity: 0.55,
-        },
-        line("M296 470 C300 474 304 474 306 470", stroke.fine),
+        // A few scruffy fur flicks so the bare chimp reads as hairy.
+        line("M262 420 l8 14 M330 420 l-8 14 M290 480 l6 12 M316 500 l-6 12", stroke.fine, art.furLight),
       ],
     },
     {
@@ -125,50 +131,72 @@ export function bodyParts(pose: Pose): Part[] {
     {
       id: "body-hands",
       z: Z.hands,
-      shapes: [
-        area(ellipse(handL[0] - 2, handL[1] + 14, 17, 21), art.tan),
-        area(ellipse(handR[0] + 2, handR[1] + (pose === "wave" ? -14 : 14), 17, 21), art.tan),
+      shapes: [area(hl.shape, art.skin), area(hr.shape, art.skin)],
+      details: [
+        ...hl.creases,
+        ...hr.creases,
+        ...(pose === "wave"
+          ? [line(`M${pointAt(right, 1)[0] - 30} ${pointAt(right, 1)[1] - 40} l-10 -8 M${pointAt(right, 1)[0] + 30} ${pointAt(right, 1)[1] - 44} l10 -8`, stroke.fine)]
+          : []),
       ],
-      details:
-        pose === "wave"
-          ? [
-              line(`M${handR[0] - 8} ${handR[1] - 28} l-4 -12`, stroke.fine),
-              line(`M${handR[0] + 4} ${handR[1] - 32} l0 -12`, stroke.fine),
-              line(`M${handR[0] + 15} ${handR[1] - 28} l5 -11`, stroke.fine),
-            ]
-          : [],
     },
     {
       id: "body-ears",
       z: Z.ears,
-      shapes: [area(earPath(146, 236, 50, -1), art.fur), area(earPath(454, 228, 47, 1), art.fur)],
-      details: [
-        { d: earPath(140, 238, 27, -1), fill: art.tan, stroke: "none" },
-        { d: earPath(460, 230, 25, 1), fill: art.tan, stroke: "none" },
-      ],
+      shapes: [area(earL.shape, art.skin), area(earR.shape, art.skin)],
+      details: [line(earL.fold, stroke.fine, art.skinDeep), line(earR.fold, stroke.fine, art.skinDeep)],
     },
     {
       id: "body-head",
       z: Z.head,
       shapes: [area(HEAD, art.fur)],
       details: [
-        // The tuft: three quick marker flicks, like a doodle signature.
-        line("M292 92 C288 76 282 66 272 60", stroke.fine),
-        line("M300 91 C302 74 306 62 316 54", stroke.fine),
-        line("M308 92 C316 80 326 74 338 72", stroke.fine),
+        // Messy hair: a few flicks that stick up, plus scruffy sideburns.
+        line("M276 102 C270 86 262 78 250 74", stroke.fine),
+        line("M296 99 C296 82 300 70 310 62", stroke.fine),
+        line("M314 101 C322 88 334 82 346 82", stroke.fine),
+        line("M188 250 l-10 10 M186 270 l-12 6 M412 248 l10 10 M414 268 l12 6", stroke.fine),
       ],
     },
     {
       id: "body-face",
       z: Z.face,
-      shapes: [area(FACE_MASK, art.tan)],
+      shapes: [area(FACE, art.skinDark)],
       details: [
-        // Muzzle curve separating the eye lobes from the snout.
-        line("M236 252 C262 240 338 238 366 250", stroke.fine, art.tanDark),
+        // Deep eye sockets, then the brow ridge over them.
+        { d: ellipse(277, 222, 17, 13), fill: art.skinDeep, stroke: "none" },
+        { d: ellipse(323, 220, 17, 13), fill: art.skinDeep, stroke: "none" },
+        { d: BROW, fill: art.skinDeep, stroke: "none" },
+        line("M222 202 C240 210 268 208 292 210", stroke.fine),
+        line("M308 208 C332 208 360 210 378 200", stroke.fine),
+      ],
+    },
+    {
+      id: "body-muzzle",
+      z: Z.face + 1,
+      shapes: [area(MUZZLE, art.skin)],
+      details: [
+        // Nose bump and the wrinkles across the long upper lip.
+        line("M284 254 C292 262 308 262 316 254", stroke.fine, art.skinDeep),
+        line("M238 288 C266 300 334 300 362 286", 3.5, art.skinDeep),
+        line("M246 304 C272 314 328 314 354 302", 3.5, art.skinDeep),
       ],
     },
   ];
+  if (SHOW_TAIL) parts.unshift({ id: "body-tail", z: Z.tail, shapes: [tube(TAIL, art.fur, LIMB.tail)] });
   return parts;
 }
 
+/** Shared face anchors for expressions (after the redesign). */
+export const FACE_ANCHORS = {
+  eyeL: [277, 220] as Pt,
+  eyeR: [323, 218] as Pt,
+  mouthY: 330,
+  nostrilY: 268,
+} as const;
+
+/** Exported for the design sheet and tests. */
 export const HEAD_PATH = HEAD;
+export const FACE_PATH = FACE;
+export const MUZZLE_PATH = MUZZLE;
+export { ellipse };

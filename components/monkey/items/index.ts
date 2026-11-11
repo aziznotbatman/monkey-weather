@@ -47,7 +47,7 @@ export const ITEM_BOX: Record<ItemId, readonly [number, number, number, number]>
   sneakers: [190, 684, 220, 92],
   boots: [190, 644, 220, 132],
   rainboots: [190, 618, 220, 160],
-  gloves: [150, 570, 300, 80],
+  gloves: [150, 610, 300, 90],
   umbrella: [300, 16, 290, 690],
 };
 
