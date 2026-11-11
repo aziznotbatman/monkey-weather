@@ -40,7 +40,7 @@ export const MONKEY_LINES: Record<Mood, string[]> = {
     "If you see a banana, it's mine.",
   ],
   shivering: [
-    "My tail is filing a complaint about the cold.",
+    "My ears are filing a formal complaint about the cold.",
     "Cold enough that I'm considering hibernation. Monkeys don't do that. I checked.",
     "Your breath will be visible. Mine already is.",
     "I wore everything I own. You should too.",
@@ -64,7 +64,7 @@ export const MONKEY_LINES: Record<Mood, string[]> = {
     "Sunscreen. I don't make the rules. Actually, I do.",
   ],
   windblown: [
-    "The wind keeps trying to steal my tuft.",
+    "The wind keeps trying to restyle my hair. It is not going well.",
     "Hats will travel today. Secure yours.",
     "Windy enough to style your hair for you. Badly.",
     "Lean into it. Literally.",

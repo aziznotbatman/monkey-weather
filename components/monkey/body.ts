@@ -1,5 +1,16 @@
 import { art, stroke } from "@/lib/tokens";
-import { ARM_L, ARM_R, ARM_R_WAVE, LEG_L, LEG_R, LIMB, limbPath, pointAt, type Limb, type Pt } from "./anchors";
+import {
+  ARM_L,
+  ARM_R,
+  ARM_R_WAVE,
+  LEG_L,
+  LEG_R,
+  LIMB,
+  limbPath,
+  pointAt,
+  type Limb,
+  type Pt,
+} from "./anchors";
 import { area, ellipse, line, tube, type Detail, type Part } from "./parts";
 
 export type Pose = "stand" | "wave";
@@ -83,7 +94,9 @@ function hand(at: Pt, up: boolean): { shape: string; creases: Detail[] } {
   const dy = up ? -1 : 1;
   const cy = y + 22 * dy;
   const shape = `M${x - 20} ${y + 2 * dy} C${x - 26} ${cy} ${x - 20} ${y + 46 * dy} ${x - 4} ${y + 48 * dy} C${x + 10} ${y + 50 * dy} ${x + 24} ${y + 40 * dy} ${x + 22} ${cy} C${x + 22} ${y + 6 * dy} ${x + 10} ${y - 4 * dy} ${x - 20} ${y + 2 * dy}Z`;
-  const creases = [-8, 1, 10].map((ox) => line(`M${x + ox} ${y + 30 * dy} L${x + ox} ${y + 42 * dy}`, stroke.fine, art.skinDeep));
+  const creases = [-8, 1, 10].map((ox) =>
+    line(`M${x + ox} ${y + 30 * dy} L${x + ox} ${y + 42 * dy}`, stroke.fine, art.skinDeep),
+  );
   return { shape, creases };
 }
 
@@ -120,7 +133,11 @@ export function bodyParts(pose: Pose): Part[] {
       shapes: [area(TORSO, art.fur)],
       details: [
         // A few scruffy fur flicks so the bare chimp reads as hairy.
-        line("M262 420 l8 14 M330 420 l-8 14 M290 480 l6 12 M316 500 l-6 12", stroke.fine, art.furLight),
+        line(
+          "M262 420 l8 14 M330 420 l-8 14 M290 480 l6 12 M316 500 l-6 12",
+          stroke.fine,
+          art.furLight,
+        ),
       ],
     },
     {
@@ -136,7 +153,12 @@ export function bodyParts(pose: Pose): Part[] {
         ...hl.creases,
         ...hr.creases,
         ...(pose === "wave"
-          ? [line(`M${pointAt(right, 1)[0] - 30} ${pointAt(right, 1)[1] - 40} l-10 -8 M${pointAt(right, 1)[0] + 30} ${pointAt(right, 1)[1] - 44} l10 -8`, stroke.fine)]
+          ? [
+              line(
+                `M${pointAt(right, 1)[0] - 30} ${pointAt(right, 1)[1] - 40} l-10 -8 M${pointAt(right, 1)[0] + 30} ${pointAt(right, 1)[1] - 44} l10 -8`,
+                stroke.fine,
+              ),
+            ]
           : []),
       ],
     },
@@ -144,7 +166,10 @@ export function bodyParts(pose: Pose): Part[] {
       id: "body-ears",
       z: Z.ears,
       shapes: [area(earL.shape, art.skin), area(earR.shape, art.skin)],
-      details: [line(earL.fold, stroke.fine, art.skinDeep), line(earR.fold, stroke.fine, art.skinDeep)],
+      details: [
+        line(earL.fold, stroke.fine, art.skinDeep),
+        line(earR.fold, stroke.fine, art.skinDeep),
+      ],
     },
     {
       id: "body-head",
@@ -183,7 +208,8 @@ export function bodyParts(pose: Pose): Part[] {
       ],
     },
   ];
-  if (SHOW_TAIL) parts.unshift({ id: "body-tail", z: Z.tail, shapes: [tube(TAIL, art.fur, LIMB.tail)] });
+  if (SHOW_TAIL)
+    parts.unshift({ id: "body-tail", z: Z.tail, shapes: [tube(TAIL, art.fur, LIMB.tail)] });
   return parts;
 }
 

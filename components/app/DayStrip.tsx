@@ -59,6 +59,10 @@ export function DayStrip({ summary, changes, units, activeTime }: DayStripProps)
       time: m.time,
       label: m.nums.length > 1 ? `${m.nums[0]}–${m.nums[m.nums.length - 1]}` : String(m.nums[0]),
     }));
+  const uvPeak = hours.reduce<(typeof hours)[number] | null>(
+    (best, h) => (h.uv >= UV_HIGH && (!best || h.uv > best.uv) ? h : best),
+    null,
+  );
   const barW = Math.min(30, ((W - PAD_X * 2) / hours.length) * 0.55);
 
   return (
@@ -145,7 +149,7 @@ export function DayStrip({ summary, changes, units, activeTime }: DayStripProps)
           <path d={smoothPath(pts)} fill="none" stroke={ink} strokeWidth={5} />
           <path d={smoothPath(pts)} fill="none" stroke={art.mustard} strokeWidth={2} />
           {hours.map((h) =>
-            h.uv >= UV_HIGH ? (
+            h === uvPeak ? (
               <g key={`u${h.time}`} transform={`translate(${x(h.time)} ${y(h.feelsLikeC) - 20})`}>
                 <circle r={7} fill={art.sun} stroke={ink} strokeWidth={2.5} />
                 <text y={-12} textAnchor="middle" className={styles.stripUv}>

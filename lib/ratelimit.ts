@@ -34,7 +34,12 @@ export function createRateLimiter(opts: { limit: number; windowMs: number; maxKe
   };
 }
 
-export const RATE_LIMIT = { limit: 20, windowMs: 10 * 60 * 1000 } as const;
+const envLimit = Number(process.env.OUTFIT_RATE_LIMIT);
+/** 20 requests per 10 minutes per IP. OUTFIT_RATE_LIMIT overrides the count (used by the e2e server). */
+export const RATE_LIMIT = {
+  limit: Number.isInteger(envLimit) && envLimit > 0 ? envLimit : 20,
+  windowMs: 10 * 60 * 1000,
+} as const;
 export const outfitRateLimit = createRateLimiter(RATE_LIMIT);
 
 /** Client IP as seen by Vercel's proxy. Used only as an in-memory key, never logged or stored. */
