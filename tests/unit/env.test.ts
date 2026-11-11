@@ -4,13 +4,20 @@ vi.mock("server-only", () => ({}));
 
 import {
   DEFAULT_AI_BASE_URL,
+  DEFAULT_AI_FALLBACK_MODEL,
   DEFAULT_AI_MODEL,
   DEFAULT_REASONING_EFFORT,
   getAiSettings,
   isAiConfigured,
 } from "@/lib/env";
 
-const KEYS = ["AI_API_KEY", "AI_BASE_URL", "AI_MODEL", "AI_REASONING_EFFORT"] as const;
+const KEYS = [
+  "AI_API_KEY",
+  "AI_BASE_URL",
+  "AI_MODEL",
+  "AI_FALLBACK_MODEL",
+  "AI_REASONING_EFFORT",
+] as const;
 
 afterEach(() => {
   for (const k of KEYS) vi.stubEnv(k, "");
@@ -62,5 +69,16 @@ describe("AI settings", () => {
     expect(getAiSettings().reasoningEffort).toBe("minimal");
     vi.stubEnv("AI_REASONING_EFFORT", "turbo");
     expect(getAiSettings().reasoningEffort).toBe(DEFAULT_REASONING_EFFORT);
+  });
+
+  it("uses a second Gemini model for busy retries, only with the default provider", () => {
+    expect(getAiSettings().fallbackModel).toBe(DEFAULT_AI_FALLBACK_MODEL);
+    vi.stubEnv("AI_FALLBACK_MODEL", "off");
+    expect(getAiSettings().fallbackModel).toBeNull();
+    vi.stubEnv("AI_FALLBACK_MODEL", "");
+    vi.stubEnv("AI_BASE_URL", "https://api.openai.com/v1");
+    expect(getAiSettings().fallbackModel).toBeNull();
+    vi.stubEnv("AI_FALLBACK_MODEL", "gpt-6-luna");
+    expect(getAiSettings().fallbackModel).toBe("gpt-6-luna");
   });
 });

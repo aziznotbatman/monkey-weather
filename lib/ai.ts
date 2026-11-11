@@ -37,11 +37,14 @@ async function callOnce(
   summary: DaySummary,
   profile: Profile,
   signal: AbortSignal,
+  useFallbackModel = false,
 ): Promise<AiOutfit> {
   const settings = getAiSettings();
+  const model =
+    useFallbackModel && settings.fallbackModel ? settings.fallbackModel : settings.model;
   const completion = await getClient(settings.apiKey, settings.baseURL).chat.completions.parse(
     {
-      model: settings.model,
+      model,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildUserMessage(summary, profile) },
@@ -57,7 +60,16 @@ async function callOnce(
   return parsed;
 }
 
+/** Server-side log of the provider's error (status + a short message). Never the key or prompt. */
+function logProviderError(err: unknown): void {
+  if (err instanceof AiError) return;
+  const status = err instanceof APIError ? err.status : undefined;
+  const message = err instanceof Error ? err.message.replace(/\s+/g, " ").slice(0, 300) : "unknown";
+  console.warn(JSON.stringify({ ai_error: status ?? null, message }));
+}
+
 function classify(err: unknown, signal: AbortSignal): AiError {
+  logProviderError(err);
   if (err instanceof AiError) return err;
   if (signal.aborted) return new AiError("timeout");
   if (err instanceof APIError && typeof err.status === "number") {
@@ -73,9 +85,13 @@ function classify(err: unknown, signal: AbortSignal): AiError {
   return new AiError("error");
 }
 
+/** Busy (5xx) or out of quota (429): worth one more try, on the fallback model if there is one. */
+const RETRYABLE: ReadonlySet<AiFailure> = new Set(["server_error", "rate_limited"]);
+
 /**
- * Ask the model for an outfit. One call; one quick retry only on a 5xx; never longer than
- * AI_TIMEOUT_MS overall. Throws AiError on any failure (the caller falls back).
+ * Ask the model for an outfit. One call, plus one retry when the model is busy or out of
+ * quota (on AI_FALLBACK_MODEL if set; a 429 is only retried when there is a different model).
+ * Never longer than AI_TIMEOUT_MS overall. Throws AiError on any failure (the caller falls back).
  */
 export async function askModel(summary: DaySummary, profile: Profile): Promise<AiOutfit> {
   const controller = new AbortController();
@@ -84,9 +100,11 @@ export async function askModel(summary: DaySummary, profile: Profile): Promise<A
     try {
       return await callOnce(summary, profile, controller.signal);
     } catch (err) {
-      const kind = classify(err, controller.signal);
-      if (kind.kind !== "server_error") throw kind;
-      return await callOnce(summary, profile, controller.signal);
+      const failure = classify(err, controller.signal);
+      const hasOtherModel = getAiSettings().fallbackModel !== null;
+      if (!RETRYABLE.has(failure.kind)) throw failure;
+      if (failure.kind === "rate_limited" && !hasOtherModel) throw failure;
+      return await callOnce(summary, profile, controller.signal, true);
     }
   } catch (err) {
     throw classify(err, controller.signal);

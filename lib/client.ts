@@ -131,7 +131,9 @@ export async function getOutfit(
       );
       if (parsed.success) {
         const outfit = parsed.data as Outfit;
-        write(KEYS.last, { key, savedAt: Date.now(), outfit });
+        // Keep only AI answers: after a fallback (e.g. the model was busy), the next visit
+        // should get another chance at the AI.
+        if (outfit.source === "ai") write(KEYS.last, { key, savedAt: Date.now(), outfit });
         return { ok: true, outfit, fromCache: false };
       }
     }

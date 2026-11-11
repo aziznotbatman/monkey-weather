@@ -63,7 +63,8 @@ Check it worked: open http://localhost:3000/api/health. It should say `{"aiConfi
 3. Optional variables (same screen):
    - `AI_MODEL`: leave empty to use the default, `gemini-3.5-flash-lite`. To change it, type another model id from AI Studio's model list.
    - `AI_BASE_URL`: leave empty for Gemini. To use another provider, set its OpenAI-compatible address and its key in `AI_API_KEY`, e.g. OpenAI `https://api.openai.com/v1`, Groq `https://api.groq.com/openai/v1`.
-   - `AI_REASONING_EFFORT`: leave empty (`low`). Use `off` if a model rejects the setting.
+   - `AI_FALLBACK_MODEL`: leave empty. With Gemini, when the main model is busy the server tries `gemini-3.1-flash-lite` once. `off` disables this.
+   - `AI_REASONING_EFFORT`: leave empty (`minimal`: fastest, and it keeps answers short). Use `off` if a model rejects the setting.
    - `NEXT_PUBLIC_PORTFOLIO_URL`: your case-study or portfolio link (must start with `https://`). Leave empty to hide it.
 4. Variables only apply to new deployments: go to **Deployments**, click the **⋯** on the latest one, then **Redeploy**.
 5. Open https://monkey-weather.vercel.app/api/health. It should say `{"aiConfigured":true}`.
@@ -162,3 +163,4 @@ No accounts, no database, no cookies, no analytics. Your preferences and last ci
 - The rate limiter is per server instance (see D).
 - "Use my location" shows "Your location" rather than a town name: Open-Meteo has no reverse geocoding, and adding another service would mean sending coordinates somewhere else.
 - The AI talks to any OpenAI-compatible Chat Completions endpoint with JSON-schema output. It defaults to Gemini; other providers are a settings change, but only Gemini has been tried with a real key.
+- Gemini's free tier is sometimes "experiencing high demand" (503). In the first live tests (11 Nov 2026), 9 of 12 requests got an AI answer (about 2 s each); the rest fell back to the backup brain (busy model, one over-long answer, one 12 s timeout). The card always works; it just says the backup brain answered. Server logs show the provider's error message (never the key) as `ai_error`.
