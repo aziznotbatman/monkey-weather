@@ -13,14 +13,14 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). Portfolio
 
 ## How it works (one paragraph)
 
-The visitor taps **Use my location** or types a city. The **browser** fetches the hourly forecast from Open-Meteo (each visitor's own IP, no key needed) and squeezes the day into ~9 two-hour steps. That small summary goes to our one server route, `POST /api/outfit`, which asks OpenAI to pick an outfit **only from a fixed wardrobe of 20 items**, then **validates and repairs** the answer. If there is no key, the AI is slow, or its answer is wrong, a deterministic **rule engine** (the "monkey's backup brain") produces the same kind of plan, so the site never breaks. The page dresses the monkey from that plan.
+The visitor taps **Use my location** or types a city. The **browser** fetches the hourly forecast from Open-Meteo (each visitor's own IP, no key needed) and squeezes the day into ~9 two-hour steps. That small summary goes to our one server route, `POST /api/outfit`, which asks an AI model (Google Gemini by default, free tier) to pick an outfit **only from a fixed wardrobe of 20 items**, then **validates and repairs** the answer. If there is no key, the AI is slow, or its answer is wrong, a deterministic **rule engine** (the "monkey's backup brain") produces the same kind of plan, so the site never breaks. The page dresses the monkey from that plan.
 
 ---
 
 ## The 3 things to do by hand
 
-1. **Add your OpenAI key** to Vercel (section B below). Until you do, the site runs on the backup brain and says so on the card.
-2. **Set a monthly spending limit** in OpenAI (section C).
+1. ~~**Add your AI key** to Vercel (section B below).~~ Done: a free Google Gemini key is set as `AI_API_KEY`. Without a key the site runs on the backup brain and says so on the card.
+2. **Keep the Gemini project on the free tier** (section C): don't add billing, and you can never be charged.
 3. **Add your portfolio link** (`NEXT_PUBLIC_PORTFOLIO_URL`, section B) so the footer links to your case study.
 
 Optional, recommended: connect GitHub to Vercel so every push deploys automatically (section E), and add a Firewall rate-limit rule (section D).
@@ -45,7 +45,7 @@ You need [Node.js 20+](https://nodejs.org/) (download the "LTS" installer).
    ```
 4. Open http://localhost:3000 in your browser. Stop it with `Ctrl + C` in Terminal.
 
-**To use the AI locally:** make a copy of `.env.example` named `.env.local` (same folder), open it in TextEdit, and paste your key after `OPENAI_API_KEY=` (no quotes, no spaces). Save, then stop and restart `npm run dev`. `.env.local` is ignored by git, so the key never leaves your Mac.
+**To use the AI locally:** make a copy of `.env.example` named `.env.local` (same folder), open it in TextEdit, and paste your key after `AI_API_KEY=` (no quotes, no spaces). Save, then stop and restart `npm run dev`. `.env.local` is ignored by git, so the key never leaves your Mac.
 
 Check it worked: open http://localhost:3000/api/health. It should say `{"aiConfigured":true}`. (This page never shows the key itself.)
 
@@ -55,12 +55,15 @@ Check it worked: open http://localhost:3000/api/health. It should say `{"aiConfi
 
 1. Go to https://vercel.com → your project **monkey-weather** → **Settings** → **Environment Variables**.
 2. Add a variable:
-   - **Key:** `OPENAI_API_KEY`
-   - **Value:** your secret key (starts with `sk-`)
+   - **Key:** `AI_API_KEY`
+   - **Value:** your secret key (a Gemini key starts with `AIza`; get one free at https://aistudio.google.com → **Get API key** → **Create API key**)
+   - Turn on **Sensitive** if offered
    - **Environments:** tick **Production** and **Preview**
    - Save.
 3. Optional variables (same screen):
-   - `OPENAI_MODEL`: leave empty to use the default, `gpt-6-luna` (the cheapest current model). To change it, type another model id, e.g. `gpt-6.1-terra`.
+   - `AI_MODEL`: leave empty to use the default, `gemini-3.5-flash-lite`. To change it, type another model id from AI Studio's model list.
+   - `AI_BASE_URL`: leave empty for Gemini. To use another provider, set its OpenAI-compatible address and its key in `AI_API_KEY`, e.g. OpenAI `https://api.openai.com/v1`, Groq `https://api.groq.com/openai/v1`.
+   - `AI_REASONING_EFFORT`: leave empty (`low`). Use `off` if a model rejects the setting.
    - `NEXT_PUBLIC_PORTFOLIO_URL`: your case-study or portfolio link (must start with `https://`). Leave empty to hide it.
 4. Variables only apply to new deployments: go to **Deployments**, click the **⋯** on the latest one, then **Redeploy**.
 5. Open https://monkey-weather.vercel.app/api/health. It should say `{"aiConfigured":true}`.
@@ -68,27 +71,27 @@ Check it worked: open http://localhost:3000/api/health. It should say `{"aiConfi
 
 Never paste the key into chat, code, GitHub, or any variable whose name starts with `NEXT_PUBLIC_` (those are visible to visitors).
 
-## C. Set an OpenAI spending limit
+## C. Costs (Gemini free tier)
 
-1. Go to https://platform.openai.com and sign in.
-2. Open **Settings** → **Limits** (in some accounts it is under **Organization → Billing / Usage limits**; the names change from time to time).
-3. Set a **monthly budget** you're comfortable with (a few euros is plenty for a portfolio site), plus an email alert threshold.
-4. When the budget is reached, OpenAI rejects requests. The site notices and switches to the backup brain automatically. Nothing breaks.
+1. The key comes from a Google AI Studio project **without billing**, so it runs on Gemini's free tier: there is nothing to charge. Don't click "Set up billing" unless you mean to.
+2. The free tier has per-minute and per-day request limits (see **AI Studio → Usage / Rate limits** for your project's exact numbers). When a limit is hit, Gemini refuses the request and the site switches to the backup brain automatically. Nothing breaks.
+3. Identical requests are cached for 30 minutes on the server and reused from the visitor's browser, so a few hundred visitors a day fit comfortably.
+4. Note: Google may use free-tier requests to improve its models. We only send a weather summary, a cleaned-up city name and three preferences, never coordinates or anything about the person.
 
-How much does one outfit cost? Each request sends roughly 1–2k tokens and receives up to 600. With `gpt-6-luna` at $0.10 / $0.50 per million tokens (input / output, as listed on OpenAI's model page on 11 Nov 2026), that is a small fraction of a cent. Identical requests are cached for 30 minutes on the server and reused from the visitor's browser.
+If you later switch to a paid provider (e.g. OpenAI), set a **monthly budget limit** in its dashboard first.
 
 ## D. Abuse protection
 
 Built in:
 - Per-IP rate limit on `/api/outfit`: 20 requests per 10 minutes. **Honest caveat:** it lives in server memory, and Vercel runs several short-lived copies of the server, so it only slows down one noisy visitor. Treat it as best-effort.
-- Strict input checks (sizes, ranges), small AI output limit, a 12-second timeout, at most one quick retry, only same-site requests accepted, nothing logged except status, duration and source.
+- Strict input checks (sizes, ranges), an AI output limit, a 12-second timeout, at most one quick retry, only same-site requests accepted, nothing logged except status, duration and source.
 
 The real backstop is a **Vercel Firewall rule**:
 1. Vercel → project → **Firewall** → **Configure** (or **Rules**) → **New Rule**.
 2. Name: `Limit outfit API`. Condition: **Request Path** · **equals** · `/api/outfit`.
 3. Action: **Rate Limit**: e.g. 30 requests per 600 seconds, keyed by **IP**, then **Deny** (429).
 4. Save and **Publish**.
-Hobby plans allow a small number of custom rules. If the Rate Limit action isn't offered on your plan, the OpenAI budget limit (section C) still caps your cost.
+Hobby plans allow a small number of custom rules. If the Rate Limit action isn't offered on your plan, the free-tier key (section C) still means there is no bill: Gemini just refuses extra requests and the site falls back.
 
 ## E. Deploy from scratch (for a non-developer)
 
@@ -158,4 +161,4 @@ No accounts, no database, no cookies, no analytics. Your preferences and last ci
 
 - The rate limiter is per server instance (see D).
 - "Use my location" shows "Your location" rather than a town name: Open-Meteo has no reverse geocoding, and adding another service would mean sending coordinates somewhere else.
-- The AI path was built against OpenAI's current Responses API and Structured Outputs, but it has **not been run with a real key yet**. It is covered by tests with a mocked model. Test it once your key is in (section B).
+- The AI talks to any OpenAI-compatible Chat Completions endpoint with JSON-schema output. It defaults to Gemini; other providers are a settings change, but only Gemini has been tried with a real key.

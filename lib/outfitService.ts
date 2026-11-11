@@ -1,5 +1,5 @@
 import { CACHE_TTL_MS, createTtlCache, outfitCacheKey } from "./cache";
-import type { AiFailure } from "./openai";
+import type { AiFailure } from "./ai";
 import { clientIp, type RateLimitResult } from "./ratelimit";
 import { ruleEngine } from "./ruleEngine";
 import {

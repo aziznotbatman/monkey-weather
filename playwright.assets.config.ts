@@ -14,6 +14,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
-    env: { OPENAI_API_KEY: "", OUTFIT_RATE_LIMIT: "10000" },
+    env: { AI_API_KEY: "", OUTFIT_RATE_LIMIT: "10000" },
   },
 });

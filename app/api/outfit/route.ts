@@ -1,5 +1,5 @@
 import { isAiConfigured } from "@/lib/env";
-import { askModel } from "@/lib/openai";
+import { askModel } from "@/lib/ai";
 import { defaultCache, handleOutfitRequest } from "@/lib/outfitService";
 import { outfitRateLimit } from "@/lib/ratelimit";
 

@@ -7,7 +7,7 @@ This file is the working checklist for the build. The full brief is `MASTER_PROM
 A mobile-first website where a hand-drawn monkey, wearing today's outfit, tells you what to wear and when to change it. Weather from Open-Meteo (browser-side), outfit logic from OpenAI (server-side, key hidden) with a rule-engine fallback. Hosted free on Vercel Hobby.
 
 ## Non-negotiables (quick recall)
-- OpenAI key only in server env `OPENAI_API_KEY`. Never client-side, never committed, never asked for in chat. Site works with no key (fallback).
+- AI key only in server env `AI_API_KEY` (was `OPENAI_API_KEY`, see Decisions). Never client-side, never committed, never asked for in chat. Site works with no key (fallback).
 - Open-Meteo called from the **browser** (avoid shared-IP limits). Visible CC BY attribution. Non-commercial: no ads/payments.
 - Monkey is an **original character**. References = line quality + colour mood only.
 - Wardrobe is a **fixed vocabulary**; AI picks ids, server validates, fallback on any failure.
@@ -138,3 +138,4 @@ _(Append assumptions and decisions here: date, decision, why.)_
 - 2026-11-11 — "Use my location" shows "Your location": Open-Meteo has no reverse geocoding, and a third-party reverse geocoder would mean sending coordinates elsewhere.
 - 2026-11-11 — Scope: nothing from the cut list was cut. Windblown, °F, all 20 items, UV marker and tap-to-preview are all in. Not built: the shareable/exportable card image (cut-list item 2).
 - 2026-11-11 — Vercel ↔ GitHub auto-deploy couldn't be linked from the CLI (the account needs a GitHub login connection). Deployed with `vercel deploy --prod`; README section E explains the one-time fix.
+- 2026-11-11 — Provider switch: no OpenAI API credit, so the AI now uses Google Gemini's free tier (`gemini-3.5-flash-lite`, no billing attached = no possible charge) through Gemini's OpenAI-compatible endpoint. The call moved from the OpenAI-only Responses API to Chat Completions + `zodResponseFormat` (JSON-schema structured output), which Gemini, OpenAI, Groq and OpenRouter all accept. Env vars renamed to provider-neutral `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`, `AI_REASONING_EFFORT` (default `low`; `off` omits it). Output cap raised 600 → 2000 tokens because Gemini counts thinking tokens as output. New failure kinds `auth` / `bad_request` so a wrong key or model id shows up in the fallback reason. Validation, repair and rule-engine fallback unchanged.

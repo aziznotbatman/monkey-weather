@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { createTtlCache } from "@/lib/cache";
-import { AiError } from "@/lib/openai";
+import { AiError } from "@/lib/ai";
 import { handleOutfitRequest, isAllowedOrigin, type ServiceDeps } from "@/lib/outfitService";
 import { createRateLimiter } from "@/lib/ratelimit";
 import type { AiOutfit, Outfit } from "@/lib/schema";

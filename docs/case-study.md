@@ -49,7 +49,7 @@ TODO(Aziz): pick the 3–4 decisions you're proudest of for the portfolio page, 
 
 ## 5. How the AI fits, and where it must not decide alone
 
-The AI (OpenAI, a small, cheap model) is used for one thing: turning a compact day summary plus a tiny profile (runs cold/warm, walks/cycles/takes transit, casual/smart) into an outfit plan and a line of copy in the chimp's voice.
+The AI (Google Gemini Flash-Lite on its free tier, through an OpenAI-compatible API so the provider can be swapped) is used for one thing: turning a compact day summary plus a tiny profile (runs cold/warm, walks/cycles/takes transit, casual/smart) into an outfit plan and a line of copy in the chimp's voice.
 
 It is deliberately **boxed in**:
 - **Fixed vocabulary.** It can only choose item ids from the 20-item wardrobe, slot by slot, through a strict JSON schema (Structured Outputs). It can't invent a garment the chimp can't wear.
@@ -67,7 +67,7 @@ TODO(Aziz): once the key is in, compare a few AI plans with the rule engine on t
 - Next.js + TypeScript on Vercel's free Hobby plan; one server route for the AI. Weather from Open-Meteo, called from the browser.
 - The chimp is drawn **in code**: hand-authored SVG paths on a 600 × 800 skeleton, with a separate ink layer for the outline. An SVG turbulence filter wobbles only the ink, so the line looks like marker while fills stay clean.
 - All colours, line widths, radii and type sizes live in one tokens file.
-- Abuse and cost protection: input limits, rate limiting, a 30-minute cache, a same-site check, small output limits, and an OpenAI monthly budget.
+- Abuse and cost protection: input limits, rate limiting, a 30-minute cache, a same-site check, small output limits, and a free-tier AI key with no billing attached.
 - Privacy: no accounts, cookies, analytics or database. Preferences live in the browser.
 
 ## 7. Testing
