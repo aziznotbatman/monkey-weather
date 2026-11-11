@@ -91,6 +91,11 @@ TODO(Aziz): user testing. Even 3–5 people trying it on their phone would make 
 
 Monkey Weather turns the forecast into an outfit. Weather apps give you numbers; this one gives you a hand-drawn chimp wearing exactly what to put on, plus a few sticky notes telling you when to change it ("17:00 · add umbrella · rain from 17:00"). Tap a note and the chimp changes clothes while the sky changes colour. A hand-written rule engine picks from a 26-item wardrobe and reacts to drizzle, downpours, storms, gusts, sleet, snow and muggy heat. I tried an LLM first; the rules dressed him better, so they stayed. The character is original, drawn entirely in code: SVG paths on one skeleton, with a marker-wobble filter on the ink. Built with Next.js on Vercel; weather by Open-Meteo. No accounts, no tracking; your location stays in your browser.
 
+## Two overview slides (2800 × 1700)
+
+- `docs/assets/slide-1-ui-bento-2800x1700.png`: the product as a bento grid: logo, the real card at 07:00 and with the 17:00 note tapped, four faces, the 7 skies and all 26 garments.
+- `docs/assets/slide-2-how-its-built-2800x1700.png`: how it's built: services, the in-browser pipeline (forecast → summary → conditions → rule engine → words → chimp), stack, where AI fits, and measured numbers.
+
 ## Six portfolio images, in order
 
 1. `docs/assets/poster-big-swing-2800x1700.png`: hero: the big-swing day, notes and day strip

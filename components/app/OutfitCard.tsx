@@ -27,6 +27,8 @@ interface OutfitCardProps {
   onChangePlace: () => void;
   onOpenPrefs: () => void;
   onSky: (s: SkyKind) => void;
+  /** Open with this change note already tapped (portfolio slides). */
+  initialActive?: number;
 }
 
 function dayTitle(day: DayChoice, dateISO: string): string {
@@ -52,7 +54,7 @@ function feelsRange(summary: DaySummary): { from: number; to: number } {
 
 export function OutfitCard(props: OutfitCardProps) {
   const { summary, outfit, profile, day } = props;
-  const [active, setActive] = useState<number | null>(null);
+  const [active, setActive] = useState<number | null>(props.initialActive ?? null);
   const [popKey, setPopKey] = useState(0);
   const [prevShown, setPrevShown] = useState(outfit.base);
   const stageRef = useRef<HTMLDivElement>(null);

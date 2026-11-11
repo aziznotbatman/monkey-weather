@@ -33,7 +33,12 @@ export interface MonkeyProps {
   label?: string;
   /** Hide from assistive tech (decorative use). */
   decorative?: boolean;
+  /** Show only part of the drawing, as [x, y, w, h] in the 600 × 800 canvas (e.g. the head). */
+  crop?: readonly [number, number, number, number];
 }
+
+/** The head and ears, for logos and icons. */
+export const HEAD_CROP = [80, 40, 440, 360] as const;
 
 const MOOD_WORDS: Record<UiMood, string> = {
   happy: "looking happy",
@@ -75,6 +80,7 @@ export function Monkey({
   className,
   label,
   decorative,
+  crop,
 }: MonkeyProps) {
   const filter = `${uid}-wobble`;
   const parts = collectParts(outfit, mood, pose);
@@ -89,7 +95,7 @@ export function Monkey({
     );
   return (
     <svg
-      viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
+      viewBox={crop ? crop.join(" ") : `0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
       className={className}
       role={decorative ? undefined : "img"}
       aria-label={decorative ? undefined : (label ?? monkeyLabel(outfit, mood))}

@@ -8,6 +8,8 @@ import { mockWeather, savedPlace } from "../e2e/mocks";
  *   card-<id>-mobile-full.png        the whole scrolling card @2x
  *   card-<id>-desktop.png            1280×800 @2x
  *   poster-<id>-2800x1700.png        landscape composite for Figma/Behance
+ *   slide-1-ui-bento-2800x1700.png   portfolio slide: the product as a bento grid
+ *   slide-2-how-its-built-2800x1700.png  portfolio slide: architecture, stack and AI
  */
 const OUT = "docs/assets";
 const DAYS = [
@@ -67,3 +69,15 @@ test("hero preview: the 17:00 note tapped", async ({ page }) => {
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: `${OUT}/preview-big-swing-1700-mobile.png` });
 });
+
+for (const [id, name] of [
+  ["ui", "slide-1-ui-bento"],
+  ["build", "slide-2-how-its-built"],
+] as const) {
+  test(`slide ${id}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 850 });
+    await page.goto(`/slides/${id}`);
+    await page.evaluate(() => document.fonts.ready);
+    await page.screenshot({ path: `${OUT}/${name}-2800x1700.png` });
+  });
+}

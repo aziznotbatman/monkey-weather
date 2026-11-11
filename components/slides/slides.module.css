@@ -1,0 +1,284 @@
+/* Portfolio slides: 1400 × 850 CSS px, captured at 2× = 2800 × 1700. */
+
+.slide {
+  width: 1400px;
+  height: 850px;
+  overflow: hidden;
+  position: relative;
+  --border: 3px solid var(--ink);
+  --shadow: 0 4px 0 var(--ink);
+  --shadow-press: 0 1px 0 var(--ink);
+}
+
+/* ---------- Logo ---------- */
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--ui-paper);
+}
+
+.logoDark {
+  color: var(--ink);
+}
+
+.logoHead {
+  width: 132px;
+  height: auto;
+  flex: none;
+}
+
+.logoStack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.logoStack .logoHead {
+  width: 236px;
+  margin-left: -12px;
+}
+
+.logoStack .logoWord {
+  font-size: 66px;
+}
+
+.logoWord {
+  font-family: var(--font-display), cursive;
+  font-size: 54px;
+  line-height: 0.86;
+  letter-spacing: -0.5px;
+}
+
+/* ---------- Bento ---------- */
+
+.bento {
+  background: #e9e4d8;
+  display: grid;
+  grid-template-columns: 300px 1fr 1fr 300px;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 24px;
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tLogo {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  background: var(--ink);
+  padding: 34px 26px 26px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tagline {
+  margin: auto 0 12px;
+  font-family: var(--font-display), cursive;
+  font-size: 30px;
+  line-height: 1.02;
+  color: var(--ui-paper);
+}
+
+.url {
+  margin: 0;
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--ui-accent);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.tFaces {
+  grid-column: 1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--ink);
+  padding: 10px;
+}
+
+.face {
+  position: relative;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.face svg {
+  width: 96%;
+  height: auto;
+}
+
+.face span {
+  position: absolute;
+  left: 8px;
+  bottom: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ui-paper);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tPhoneA,
+.tPhoneB {
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 22px;
+}
+
+.tPhoneA {
+  grid-column: 2;
+  background: var(--art-yellow, #ffd23f);
+}
+
+.tPhoneB {
+  grid-column: 3;
+  background: var(--ui-accent);
+}
+
+.tileTag {
+  margin: 0 0 18px;
+  padding: 8px 16px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ui-paper);
+  color: var(--ink);
+  font-size: 15px;
+  box-shadow: 0 3px 0 var(--ink);
+  white-space: nowrap;
+}
+
+.tileTag b {
+  font-family: var(--font-display), cursive;
+  font-weight: 400;
+  font-size: 19px;
+  margin-right: 4px;
+}
+
+/* Phone: a 390 × 844 screen, scaled down. */
+.phone {
+  --scale: 0.8;
+  width: calc(390px * var(--scale) + 20px);
+  height: calc(844px * var(--scale) + 20px);
+  flex: none;
+  padding: 10px;
+  border-radius: 52px;
+  background: var(--ink);
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 2px #3a3a3a;
+}
+
+.phoneScreen {
+  width: 390px;
+  height: 844px;
+  transform: scale(var(--scale));
+  transform-origin: 0 0;
+  border-radius: 54px;
+  overflow: hidden;
+  /* Makes position: fixed children (the grain overlay) stay inside the screen. */
+  contain: paint;
+}
+
+.phoneScreen > div {
+  min-height: 844px;
+  padding-top: 44px;
+}
+
+.tSkies {
+  grid-column: 4;
+  grid-row: 1;
+  background: var(--ui-paper);
+  padding: 20px 20px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tileTitle {
+  margin: 0 0 12px;
+  font-family: var(--font-display), cursive;
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.skies {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.skies li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.skies code {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.tWardrobe {
+  grid-column: 4;
+  grid-row: 2 / 4;
+  background: #fff;
+  padding: 20px 18px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.wardrobe {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 6px;
+}
+
+.wardrobe li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f4f0e6;
+  padding: 6px;
+  min-height: 0;
+}
+
+.wardrobeIcon {
+  width: 100%;
+  height: 100%;
+  max-height: 46px;
+}
